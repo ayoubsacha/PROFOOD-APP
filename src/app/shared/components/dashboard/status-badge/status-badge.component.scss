@@ -11,21 +11,22 @@
 }
 
 .status-badge--success {
-  color: #168244;
-  background: #e8f8ee;
+  border: 1px solid rgba(214, 168, 90, 0.35);
+  color: #d6a85a;
+  background: rgba(214, 168, 90, 0.16);
 }
 
 .status-badge--warning {
-  color: #a96900;
-  background: #fff4d6;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.16);
 }
 
 .status-badge--danger {
-  color: #bd3f2c;
-  background: #fff0ec;
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.14);
 }
 
 .status-badge--neutral {
-  color: #29313d;
-  background: #edf1f5;
+  color: #c7ced9;
+  background: #1f242d;
 }

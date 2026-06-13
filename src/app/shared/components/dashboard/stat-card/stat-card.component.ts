@@ -10,5 +10,5 @@ export class StatCardComponent {
   @Input() value: string | number = 0;
   @Input() helper = '';
   @Input() icon = '';
-  @Input() tone: 'dark' | 'green' | 'blue' | 'amber' | 'red' | 'gray' = 'gray';
+  @Input() tone: 'dark' | 'gold' | 'blue' | 'amber' | 'red' | 'gray' = 'gray';
 }

@@ -4,7 +4,27 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ProductApiService } from '../../core/product-api.service';
 import { PRODUCT_CATALOG, ProductCatalogItem } from '../../models/product-catalog.models';
 
-type ProductSort = 'default' | 'price-asc' | 'price-desc' | 'characteristic-asc' | 'characteristic-desc';
+type ProductGroupId =
+  | 'fruits-legumes'
+  | 'poissons'
+  | 'lait'
+  | 'viandes'
+  | 'fruits-secs'
+  | 'equipements'
+  | 'maintenance';
+
+interface ProductGroupConfig {
+  id: ProductGroupId;
+  label: string;
+  description: string;
+  image: string;
+  families: string[];
+}
+
+interface ProductGroupView extends ProductGroupConfig {
+  products: ProductCatalogItem[];
+  totalProducts: number;
+}
 
 @Component({
   selector: 'app-products-page',
@@ -16,130 +36,250 @@ export class ProductsPageComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly productApi = inject(ProductApiService);
 
-  protected readonly stars = [1, 2, 3, 4, 5];
-  protected readonly selectedFamily = signal(this.route.snapshot.queryParamMap.get('family') ?? '');
   protected readonly allProducts = signal<ProductCatalogItem[]>(PRODUCT_CATALOG);
-  protected readonly nameSearch = signal('');
-  protected readonly brandSearch = signal('');
-  protected readonly categoryFilter = signal('');
-  protected readonly characteristicFilter = signal('');
-  protected readonly sortOrder = signal<ProductSort>('default');
-
-  protected readonly pageProducts = computed(() => {
-    return this.selectedFamily()
-      ? this.allProducts().filter((product) => product.family === this.selectedFamily())
-      : this.allProducts();
+  protected readonly isLoading = signal(true);
+  protected readonly searchTerms = signal<Record<ProductGroupId, string>>({
+    'fruits-legumes': '',
+    poissons: '',
+    lait: '',
+    viandes: '',
+    'fruits-secs': '',
+    equipements: '',
+    maintenance: '',
   });
 
-  protected readonly categoryOptions = computed(() => {
-    return [...this.pageProducts()].sort((first, second) =>
-      first.name.localeCompare(second.name, 'fr'),
-    );
-  });
+  protected readonly groupConfigs: ProductGroupConfig[] = [
+    {
+      id: 'fruits-legumes',
+      label: 'Fruits et légumes',
+      description: 'Fruits frais, légumes, herbes et produits de saison pour achats B2B.',
+      image: '/assets/group-produce.png',
+      families: [
+        'Legumes racines & tubercules',
+        'Legumes bulbes',
+        'Legumineuses fraiches',
+        'Champignons',
+        'Herbes aromatiques',
+        'Agrumes',
+        'Fruits a pepins',
+        'Fruits a noyau',
+        'Fruits mediterraneens',
+        'Fruits rouges',
+        'Fruits tropicaux',
+        'Melons & pasteques',
+      ],
+    },
+    {
+      id: 'poissons',
+      label: 'Poissons et fruits de mer',
+      description: 'Poissons, crustaces, coquillages et produits sous chaine froide.',
+      image: '/assets/group-seafood.png',
+      families: [
+        'Cephalopodes',
+        'Coquillages',
+        'Crustaces',
+        'Filets & decoupes',
+        'Poissons frais',
+        'Poissons nobles',
+        'Produits surgeles',
+      ],
+    },
+    {
+      id: 'lait',
+      label: 'Lait et produits dérivés',
+      description: 'Lait, crème, beurre, fromages, yaourts et desserts lactés.',
+      image: '/assets/group-dairy.png',
+      families: [
+        'Beurres & matieres grasses',
+        'Cremes',
+        'Desserts lactes',
+        'Fromages frais',
+        'Glacerie',
+        'Lait',
+        'Matieres grasses laitieres',
+        'Yaourts & fermentes',
+      ],
+    },
+    {
+      id: 'viandes',
+      label: 'Viandes et volailles',
+      description: 'Viandes bovines, ovines, caprines, veau, volailles et découpes.',
+      image: '/assets/group-meat.png',
+      families: [
+        'Abats',
+        'Charcuterie halal',
+        'Produits prepares',
+        'Surgeles viande',
+        'Viande bovine',
+        'Viande caprine',
+        'Viande de veau',
+        'Viande ovine',
+        'Volaille',
+      ],
+    },
+    {
+      id: 'fruits-secs',
+      label: 'Fruits secs, graines et noix',
+      description: 'Noix, raisins secs, graines et fruits secs séparés des produits frais.',
+      image: '/assets/group-events.png',
+      families: ['Fruits secs & graines', 'Fruits secs & noix', 'Raisins'],
+    },
+    {
+      id: 'equipements',
+      label: 'Équipements professionnels',
+      description: 'Matériel de cuisine professionnelle, froid, cuisson et préparation.',
+      image: '/assets/group-professionals.png',
+      families: ['Equipements professionnels'],
+    },
+    {
+      id: 'maintenance',
+      label: 'Maintenance',
+      description: 'Interventions, installation, diagnostic et contrats de maintenance cuisine.',
+      image: '/assets/group-maintenance.png',
+      families: ['Maintenance'],
+    },
+  ];
 
-  protected readonly selectedCategoryName = computed(() => {
-    return (
-      this.categoryOptions().find((product) => product.slug === this.categoryFilter())?.name ?? ''
-    );
-  });
+  protected readonly groups = computed<ProductGroupView[]>(() =>
+    this.groupConfigs.map((group) => {
+      const baseProducts = this.allProducts().filter((product) => this.belongsToGroup(product, group));
+      const search = this.normalize(this.searchTerms()[group.id]);
 
-  protected readonly characteristicOptions = computed(() => {
-    const products = this.categoryFilter()
-      ? this.pageProducts().filter((product) => product.slug === this.categoryFilter())
-      : this.pageProducts();
-    const characteristics = products.flatMap((product) => [
-      ...product.cardCharacteristics,
-      ...product.characteristics,
-    ]);
-
-    return [...new Set(characteristics)].sort((first, second) => first.localeCompare(second, 'fr'));
-  });
-
-  protected readonly products = computed(() => {
-    const nameSearch = this.normalize(this.nameSearch());
-    const brandSearch = this.normalize(this.brandSearch());
-    const category = this.categoryFilter();
-    const characteristic = this.characteristicFilter();
-
-    const products = this.pageProducts().filter((product) => {
-      const matchesName = !nameSearch || this.normalize(product.name).includes(nameSearch);
-      const matchesBrand =
-        !brandSearch ||
-        this.normalize(product.supplier.name).includes(brandSearch) ||
-        this.normalize(product.supplier.location).includes(brandSearch);
-      const matchesCategory = !category || product.slug === category;
-      const matchesCharacteristic =
-        !characteristic ||
-        [...product.cardCharacteristics, ...product.characteristics].some(
-          (item) => item === characteristic,
-        );
-
-      return matchesName && matchesBrand && matchesCategory && matchesCharacteristic;
-    });
-
-    return this.sortProducts(products);
-  });
-
-  protected readonly hasActiveFilters = computed(() => {
-    return (
-      Boolean(this.nameSearch()) ||
-      Boolean(this.brandSearch()) ||
-      Boolean(this.categoryFilter()) ||
-      Boolean(this.characteristicFilter()) ||
-      this.sortOrder() !== 'default'
-    );
-  });
+      return {
+        ...group,
+        totalProducts: baseProducts.length,
+        products: baseProducts.filter((product) => {
+          return !search || this.normalize(product.name).includes(search);
+        }),
+      };
+    }),
+  );
 
   constructor() {
     this.productApi
       .getProducts()
       .pipe(takeUntilDestroyed())
-      .subscribe((products) => this.allProducts.set(products));
+      .subscribe({
+        next: (products) => {
+          this.allProducts.set(products);
+          this.isLoading.set(false);
+        },
+        error: () => {
+          this.isLoading.set(false);
+        },
+      });
 
     this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((params) => {
-      const family = params.get('family') ?? '';
+      const family = params.get('family');
 
-      this.selectedFamily.set(family);
-      this.categoryFilter.set('');
-      this.characteristicFilter.set('');
+      if (family) {
+        this.queueScrollToQuery(family);
+      }
     });
   }
 
+  protected scrollToGroup(groupId: ProductGroupId, event?: Event): void {
+    event?.preventDefault();
+    this.scrollToSection(this.sectionId(groupId));
+  }
+
+  protected scrollSlider(track: HTMLElement, direction: -1 | 1): void {
+    track.scrollBy({
+      left: direction * Math.max(280, Math.round(track.clientWidth * 0.86)),
+      behavior: 'smooth',
+    });
+  }
+
+  protected searchTerm(groupId: ProductGroupId): string {
+    return this.searchTerms()[groupId];
+  }
+
+  protected updateGroupSearch(groupId: ProductGroupId, event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+
+    this.searchTerms.update((terms) => ({
+      ...terms,
+      [groupId]: value,
+    }));
+  }
+
+  protected sectionId(groupId: ProductGroupId): string {
+    return `catalogue-${groupId}`;
+  }
+
   protected priceText(product: ProductCatalogItem): string {
-    return `${this.formatMoney(product.priceMad)} MAD / ${product.unit}`;
+    const price = `${this.formatMoney(product.priceMad)} MAD`;
+    return this.isService(product) ? `A partir de ${price} / ${product.unit}` : `${price} / ${product.unit}`;
   }
 
-  protected roundedRating(product: ProductCatalogItem): number {
-    return Math.round(product.rating);
+  protected actionLabel(product: ProductCatalogItem): string {
+    return this.isService(product) ? 'Demander un devis' : 'Voir le produit';
   }
 
-  protected updateNameSearch(event: Event): void {
-    this.nameSearch.set(this.readFormValue(event));
+  protected statusLabel(product: ProductCatalogItem): string {
+    if (this.isService(product)) {
+      return 'Disponible';
+    }
+
+    return product.cardCharacteristics[1] || product.cardCharacteristics[0] || 'Disponible';
   }
 
-  protected updateBrandSearch(event: Event): void {
-    this.brandSearch.set(this.readFormValue(event));
+  protected productTags(product: ProductCatalogItem): string[] {
+    return product.cardCharacteristics.slice(0, 3);
   }
 
-  protected updateCategoryFilter(event: Event): void {
-    this.categoryFilter.set(this.readFormValue(event));
-    this.characteristicFilter.set('');
+  protected isService(product: ProductCatalogItem): boolean {
+    return (
+      this.normalize(product.family) === this.normalize('Maintenance') ||
+      product.cardCharacteristics.some((tag) => this.normalize(tag).includes('service'))
+    );
   }
 
-  protected updateCharacteristicFilter(event: Event): void {
-    this.characteristicFilter.set(this.readFormValue(event));
+  private queueScrollToQuery(value: string): void {
+    const groupId = this.groupIdForQuery(value);
+
+    if (!groupId) {
+      return;
+    }
+
+    window.setTimeout(() => this.scrollToSection(this.sectionId(groupId)), 80);
   }
 
-  protected updateSortOrder(event: Event): void {
-    this.sortOrder.set(this.readFormValue(event) as ProductSort);
+  private groupIdForQuery(value: string): ProductGroupId | null {
+    const query = this.normalize(value);
+    const group = this.groupConfigs.find((item) => {
+      return (
+        this.normalize(item.label) === query ||
+        item.families.some((family) => this.normalize(family) === query)
+      );
+    });
+
+    return group?.id ?? null;
   }
 
-  protected resetFilters(): void {
-    this.nameSearch.set('');
-    this.brandSearch.set('');
-    this.categoryFilter.set('');
-    this.characteristicFilter.set('');
-    this.sortOrder.set('default');
+  private belongsToGroup(product: ProductCatalogItem, group: ProductGroupConfig): boolean {
+    const productFamily = this.normalize(product.family);
+    return group.families.some((family) => this.normalize(family) === productFamily);
+  }
+
+  private scrollToSection(sectionId: string, attempt = 0): void {
+    const target = document.getElementById(sectionId);
+
+    if (!target) {
+      if (attempt < 4) {
+        window.setTimeout(() => this.scrollToSection(sectionId, attempt + 1), 60);
+      }
+
+      return;
+    }
+
+    window.history.replaceState(null, '', `${window.location.pathname}#${sectionId}`);
+    const top = target.getBoundingClientRect().top + window.scrollY - 18;
+
+    window.scrollTo({
+      top: Math.max(top, 0),
+      behavior: 'smooth',
+    });
   }
 
   private formatMoney(value: number): string {
@@ -147,37 +287,6 @@ export class ProductsPageComponent {
       maximumFractionDigits: 2,
       minimumFractionDigits: Number.isInteger(value) ? 0 : 2,
     }).format(value);
-  }
-
-  private sortProducts(products: ProductCatalogItem[]): ProductCatalogItem[] {
-    return [...products].sort((first, second) => {
-      switch (this.sortOrder()) {
-        case 'price-asc':
-          return first.priceMad - second.priceMad;
-        case 'price-desc':
-          return second.priceMad - first.priceMad;
-        case 'characteristic-asc':
-          return this.primaryCharacteristic(first).localeCompare(
-            this.primaryCharacteristic(second),
-            'fr',
-          );
-        case 'characteristic-desc':
-          return this.primaryCharacteristic(second).localeCompare(
-            this.primaryCharacteristic(first),
-            'fr',
-          );
-        default:
-          return this.allProducts().indexOf(first) - this.allProducts().indexOf(second);
-      }
-    });
-  }
-
-  private primaryCharacteristic(product: ProductCatalogItem): string {
-    return product.cardCharacteristics[0] ?? product.characteristics[0] ?? '';
-  }
-
-  private readFormValue(event: Event): string {
-    return (event.target as HTMLInputElement | HTMLSelectElement).value.trim();
   }
 
   private normalize(value: string): string {

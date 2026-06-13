@@ -1,70 +1,60 @@
-<main class="client-dashboard">
-  <aside class="dashboard-sidebar">
-    <a class="brand" routerLink="/client/dashboard" aria-label="Profood">
-      <img src="/assets/profood-logo.png" alt="Profood" />
-    </a>
+<main class="client-dashboard" [class.sidebar-open]="sidebarOpen()">
+  <button
+    type="button"
+    class="sidebar-overlay"
+    aria-label="Fermer le menu"
+    (click)="closeSidebar()"
+  ></button>
 
-    <span class="nav-label">Home</span>
+  <aside class="dashboard-sidebar" aria-label="Navigation dashboard client">
+    <button type="button" class="sidebar-close" aria-label="Fermer le menu" (click)="closeSidebar()">
+      x
+    </button>
+
     @if (user(); as user) {
       <section class="client-card">
-        <span class="avatar" aria-hidden="true"></span>
+        @if (profileImagePreview()) {
+          <img class="avatar-img" [src]="profileImagePreview()" alt="" />
+        } @else {
+          <span class="avatar" aria-hidden="true"></span>
+        }
         <strong>{{ user.companyName || user.name }}</strong>
         <small>{{ user.email }}</small>
       </section>
     }
 
-    <span class="nav-label">Apps</span>
-    <nav class="dashboard-nav" aria-label="Navigation client">
+    <span class="nav-label">Navigation</span>
+    <nav class="dashboard-nav">
       @for (tab of tabs; track tab.id) {
         <button
           type="button"
           [class.is-active]="activeTab() === tab.id"
+          [attr.aria-current]="activeTab() === tab.id ? 'page' : null"
           (click)="setTab(tab.id)"
         >
-          {{ tab.label }}
+          <span [class]="'nav-icon nav-icon--' + tab.id" aria-hidden="true"></span>
+          <span>{{ tab.label }}</span>
         </button>
       }
+
     </nav>
 
-    <a class="market-link" routerLink="/home">Marketplace</a>
-    <button type="button" class="logout-button" (click)="logout()">Se deconnecter</button>
+    <a class="market-link" routerLink="/home" (click)="closeSidebar()">
+      <span class="nav-icon nav-icon--home" aria-hidden="true"></span>
+      <span>HOME</span>
+    </a>
+
+    <button type="button" class="logout-button" (click)="logout()">
+      <span class="nav-icon nav-icon--logout" aria-hidden="true"></span>
+      <span>Logout</span>
+    </button>
   </aside>
 
   <section class="dashboard-main">
-    <header class="dashboard-topbar">
-      <div class="topbar-left">
-        <button type="button" aria-label="Menu">=</button>
-        <label class="topbar-search">
-          <span class="sr-only">Recherche</span>
-          <input type="search" placeholder="Search" />
-        </label>
-        <a routerLink="/home">Apps</a>
-        <a routerLink="/products">Produits</a>
-        <button type="button" (click)="setTab('cart')">Panier</button>
-      </div>
-
-      <div class="topbar-right">
-        <span>FR</span>
-        <button type="button" aria-label="Panier" (click)="setTab('cart')">
-          {{ cartCount() }}
-        </button>
-        <button type="button" aria-label="Notifications">{{ pendingOrders() }}</button>
-        <span class="topbar-avatar" aria-hidden="true"></span>
-      </div>
-    </header>
-
-    <header class="dashboard-header">
-      <div>
-        <span>Client professionnel</span>
-        <h1>Espace client</h1>
-        <p>Profil, panier, commandes et achats professionnels.</p>
-      </div>
-
-      <div class="header-actions">
-        <a routerLink="/products">Voir les produits</a>
-        <button type="button" (click)="loadDashboard()">Actualiser</button>
-      </div>
-    </header>
+    <button type="button" class="mobile-menu-button" (click)="toggleSidebar()">
+      <span aria-hidden="true"></span>
+      Menu
+    </button>
 
     @if (notice()) {
       <p class="alert alert--success">{{ notice() }}</p>
@@ -74,7 +64,16 @@
       <p class="alert alert--error">{{ error() }}</p>
     }
 
+    @if (loading()) {
+      <p class="loading-strip">Chargement du dashboard...</p>
+    }
+
     @if (activeTab() === 'overview') {
+      <section class="dashboard-section dashboard-section--overview" aria-labelledby="client-overview-title">
+      <header class="section-heading">
+        <span>Charts</span>
+        <h2 id="client-overview-title">Vue d'ensemble</h2>
+      </header>
       <section class="summary-grid" aria-label="Indicateurs client">
         <article class="summary-card summary-card--cart">
           <i aria-hidden="true">P</i>
@@ -152,7 +151,7 @@
         </article>
 
         <article class="chart-panel">
-          <h2>Achats par mois</h2>
+          <h2>Spend mensuel</h2>
           @if (monthlySpendChart().length) {
             @for (point of monthlySpendChart(); track point.label) {
               <div class="bar-row">
@@ -199,12 +198,16 @@
 
       <section class="buyer-grid">
         <article class="buyer-panel">
-          <h2>Fournisseurs favoris</h2>
+          <h2>Votre fournisseur preferee</h2>
           @if (favoriteSuppliers().length) {
             @for (supplier of favoriteSuppliers(); track supplier.supplierId) {
               <div class="supplier-row">
                 <strong>{{ supplier.label }}</strong>
-                <span>{{ supplier.quantity }} unites commandees</span>
+                <span>
+                  {{ supplier.orderCount }} commandes -
+                  {{ supplier.quantity }} unites -
+                  {{ money(supplier.totalSpending) }} MAD
+                </span>
               </div>
             }
           } @else {
@@ -226,9 +229,15 @@
           }
         </article>
       </section>
+      </section>
     }
 
     @if (activeTab() === 'cart') {
+    <section class="dashboard-section dashboard-section--cart" aria-labelledby="client-cart-title">
+      <header class="section-heading">
+        <span>Panier</span>
+        <h2 id="client-cart-title">Gestion du panier</h2>
+      </header>
       <section class="cart-grid">
         <article class="cart-panel">
           <header>
@@ -343,9 +352,15 @@
           </p>
         </aside>
       </section>
+    </section>
     }
 
     @if (activeTab() === 'orders') {
+    <section class="dashboard-section dashboard-section--orders" aria-labelledby="client-orders-title">
+      <header class="section-heading">
+        <span>Commandes</span>
+        <h2 id="client-orders-title">Liste et suivi des commandes</h2>
+      </header>
       <app-filter-bar
         searchPlaceholder="Chercher une commande"
         [statusOptions]="orderStatusOptions"
@@ -418,16 +433,41 @@
           </section>
         }
       </section>
+    </section>
     }
 
     @if (activeTab() === 'account') {
+    <section class="dashboard-section dashboard-section--account" aria-labelledby="client-account-title">
+      <header class="section-heading">
+        <span>Profile</span>
+        <h2 id="client-account-title">Gestion du profil</h2>
+      </header>
       <section class="account-grid">
-        <article class="form-panel">
-          <h2>Gestion du profil</h2>
+        <article class="form-panel profile-edit-panel">
+          <h2>Edit profile</h2>
+          <p class="panel-hint">Le mot de passe ne se change pas dans cette partie.</p>
           <form (ngSubmit)="saveProfile()">
+            <div class="profile-image-field">
+              <div class="profile-preview">
+                @if (profileImagePreview()) {
+                  <img [src]="profileImagePreview()" alt="Photo de profil" />
+                } @else {
+                  <span class="profile-icon profile-icon--large" aria-hidden="true"></span>
+                }
+              </div>
+              <label>
+                <span>Image du profil</span>
+                <input type="file" accept="image/*" (change)="updateProfileImage($event)" />
+              </label>
+              <button type="button" class="ghost" (click)="removeProfileImage()">Supprimer image</button>
+            </div>
             <label>
               <span>Nom</span>
               <input name="profileName" required [(ngModel)]="profileForm.name" />
+            </label>
+            <label>
+              <span>Email de connexion</span>
+              <input type="email" name="profileEmail" readonly [(ngModel)]="profileForm.email" />
             </label>
             <label>
               <span>Entreprise</span>
@@ -446,7 +486,7 @@
         </article>
 
         <article class="form-panel">
-          <h2>Securite</h2>
+          <h2>Password</h2>
           <form (ngSubmit)="changePassword()">
             <label>
               <span>Mot de passe actuel</span>
@@ -467,17 +507,97 @@
                 [(ngModel)]="passwordForm.newPassword"
               />
             </label>
+            <label>
+              <span>Confirmer le nouveau mot de passe</span>
+              <input
+                type="password"
+                name="confirmPassword"
+                required
+                minlength="8"
+                [(ngModel)]="passwordForm.confirmPassword"
+              />
+            </label>
             <button type="submit">Changer le mot de passe</button>
           </form>
         </article>
 
-        <article class="profile-panel">
-          <h2>Session</h2>
+        <article class="profile-panel account-status-panel">
+          <h2>Manage account</h2>
           <p>{{ user()?.email }}</p>
-          <p>{{ user()?.companyName || user()?.name }}</p>
-          <button type="button" class="danger" (click)="logout()">Se deconnecter</button>
+          <p>Statut actuel: <strong>{{ statusLabel(user()?.status || 'ACTIVE') }}</strong></p>
+          <button type="button" class="danger" (click)="toggleAccountStatus()">
+            {{ user()?.status === 'ACTIVE' ? 'Desactiver mon compte' : 'Activer mon compte' }}
+          </button>
+          <button type="button" (click)="logout()">Logout</button>
+        </article>
+
+      </section>
+    </section>
+    }
+
+    @if (activeTab() === 'inbox') {
+    <section class="dashboard-section dashboard-section--inbox" aria-labelledby="client-inbox-title">
+      <header class="section-heading">
+        <span>Boite de reception</span>
+        <h2 id="client-inbox-title">Messages fournisseurs</h2>
+      </header>
+      <section class="inbox-tab">
+        <article class="profile-panel inbox-panel">
+          <header>
+            <div>
+              <h2>Boite de reception</h2>
+              <p>Messages fournisseurs pour ce compte client.</p>
+            </div>
+            <button type="button" class="ghost" (click)="loadInbox()">Actualiser</button>
+          </header>
+
+          <div class="inbox-layout">
+            <div class="conversation-list">
+              @if (conversations().length) {
+                @for (conversation of conversations(); track conversation._id) {
+                  <button
+                    type="button"
+                    [class.is-active]="selectedConversation()?._id === conversation._id"
+                    (click)="selectConversation(conversation)"
+                  >
+                    <strong>{{ conversationTitle(conversation) }}</strong>
+                    <span>{{ conversation.lastMessage || conversationSubtitle(conversation) }}</span>
+                  </button>
+                }
+              } @else {
+                <p class="empty-text">Aucun message fournisseur pour le moment.</p>
+              }
+            </div>
+
+            <div class="message-thread">
+              @if (selectedConversation()) {
+                <div class="message-list">
+                  @for (message of messages(); track message._id) {
+                    <article class="message-bubble">
+                      <strong>{{ messageSender(message) }}</strong>
+                      <p>{{ message.content }}</p>
+                      <small>{{ dateText(message.createdAt) }}</small>
+                    </article>
+                  } @empty {
+                    <p class="empty-text">Cette conversation est vide.</p>
+                  }
+                </div>
+
+                <form class="reply-form" (ngSubmit)="sendReply()">
+                  <label>
+                    <span>Repondre</span>
+                    <textarea name="replyContentInbox" rows="3" [(ngModel)]="replyForm.content"></textarea>
+                  </label>
+                  <button type="submit">Envoyer</button>
+                </form>
+              } @else {
+                <p class="empty-text">Selectionnez une conversation.</p>
+              }
+            </div>
+          </div>
         </article>
       </section>
+    </section>
     }
   </section>
 </main>

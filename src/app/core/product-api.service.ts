@@ -33,12 +33,26 @@ export class ProductApiService {
   private toCatalogItem(product: BackendProduct): ProductCatalogItem {
     const characteristics = product.characteristics ?? {};
     const list = Object.entries(characteristics)
+      .filter(([key]) => !['cardCharacteristics', 'characteristics'].includes(key))
       .filter(([, value]) => value !== null && value !== undefined && value !== '')
       .map(([key, value]) => `${this.labelize(key)}: ${this.stringify(value)}`);
+    const detailList = Array.isArray(characteristics['characteristics'])
+      ? characteristics['characteristics'].map((value) => String(value))
+      : list;
+    const cardList = Array.isArray(characteristics['cardCharacteristics'])
+      ? characteristics['cardCharacteristics'].map((value) => String(value))
+      : [];
     const unit = String(characteristics['unit'] || 'unite');
     const minimumQuantity = Number(characteristics['minimumQuantity'] || 1);
     const maximumQuantity = Math.max(Number(product.stockQuantity || 1), minimumQuantity);
     const type = product.type || product.status;
+    const displayType = this.displayType(type);
+    const availability =
+      product.status === 'OUT_OF_STOCK'
+        ? 'Indisponible'
+        : displayType === 'Service'
+          ? 'Disponible'
+          : `${product.stockQuantity} en stock`;
 
     return {
       id: product._id,
@@ -60,8 +74,8 @@ export class ProductApiService {
         phone: String(characteristics['phone'] || ''),
         email: String(characteristics['email'] || ''),
       },
-      characteristics: list.length ? list : [type, `${product.stockQuantity} en stock`],
-      cardCharacteristics: [type, `${product.stockQuantity} en stock`],
+      characteristics: detailList.length ? detailList : [displayType, availability],
+      cardCharacteristics: cardList.length ? cardList : [displayType, availability],
       description: String(
         characteristics['description'] ||
           `${product.name} disponible pour commandes professionnelles.`,
@@ -82,5 +96,16 @@ export class ProductApiService {
 
   private stringify(value: unknown): string {
     return typeof value === 'object' ? JSON.stringify(value) : String(value);
+  }
+
+  private displayType(value: string): string {
+    switch (value) {
+      case 'SERVICE':
+        return 'Service';
+      case 'EQUIPEMENT':
+        return 'Équipement';
+      default:
+        return value;
+    }
   }
 }

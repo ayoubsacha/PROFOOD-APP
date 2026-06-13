@@ -7,6 +7,9 @@ import {
   CartProductRef,
   CheckoutInfo,
   ClientCart,
+  Conversation,
+  ConversationParty,
+  Message,
   OrderStatus,
   SupplierOrder,
 } from '../../core/api.models';
@@ -14,9 +17,10 @@ import { AuthService } from '../../core/auth.service';
 import { CartApiService } from '../../core/cart-api.service';
 import { ClientDashboardService } from '../../core/client-dashboard.service';
 import { FilterState } from '../../core/dashboard.models';
+import { MessagingService } from '../../core/messaging.service';
 import { FilterBarComponent } from '../../shared/components/dashboard/filter-bar/filter-bar.component';
 
-type ClientTab = 'overview' | 'cart' | 'orders' | 'account';
+type ClientTab = 'overview' | 'cart' | 'orders' | 'account' | 'inbox';
 
 interface ChartPoint {
   label: string;
@@ -34,12 +38,18 @@ export class ClientDashboardPageComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly cartApi = inject(CartApiService);
   private readonly dashboard = inject(ClientDashboardService);
+  private readonly messaging = inject(MessagingService);
   private readonly route = inject(ActivatedRoute);
 
   protected readonly user = computed(() => this.auth.currentUser());
-  protected readonly activeTab = signal<ClientTab>('overview');
+  protected readonly activeTab = signal<ClientTab>('account');
+  protected readonly sidebarOpen = signal(false);
   protected readonly cart = signal<ClientCart | null>(null);
   protected readonly orders = signal<SupplierOrder[]>([]);
+  protected readonly conversations = signal<Conversation[]>([]);
+  protected readonly selectedConversation = signal<Conversation | null>(null);
+  protected readonly messages = signal<Message[]>([]);
+  protected readonly profileImagePreview = signal('');
   protected readonly loading = signal(false);
   protected readonly notice = signal('');
   protected readonly error = signal('');
@@ -54,18 +64,25 @@ export class ClientDashboardPageComponent implements OnInit {
 
   protected readonly profileForm = {
     name: '',
+    email: '',
     companyName: '',
     phone: '',
     address: '',
+    profileImage: '',
   };
 
   protected readonly passwordForm = {
     currentPassword: '',
     newPassword: '',
+    confirmPassword: '',
   };
 
   protected readonly paymentForm = {
     method: 'Paiement securise Profood',
+  };
+
+  protected readonly replyForm = {
+    content: '',
   };
 
   protected readonly checkoutForm: CheckoutInfo = {
@@ -79,15 +96,16 @@ export class ClientDashboardPageComponent implements OnInit {
   };
 
   protected readonly tabs: { id: ClientTab; label: string }[] = [
-    { id: 'overview', label: "Vue d'ensemble" },
-    { id: 'cart', label: 'Gestion de panier' },
+    { id: 'account', label: 'Profile' },
+    { id: 'cart', label: 'Panier' },
     { id: 'orders', label: 'Commandes' },
-    { id: 'account', label: 'Compte' },
+    { id: 'inbox', label: 'Boite de reception' },
+    { id: 'overview', label: 'Charts' },
   ];
   protected readonly trackingSteps: { status: OrderStatus; label: string }[] = [
     { status: 'PENDING', label: 'En attente' },
     { status: 'CONFIRMED', label: 'Approuvee' },
-    { status: 'PROCESSING', label: 'Preparation' },
+    { status: 'PROCESSING', label: 'En expedition' },
     { status: 'DELIVERED', label: 'Livree' },
   ];
 
@@ -96,6 +114,7 @@ export class ClientDashboardPageComponent implements OnInit {
     this.cartItems().reduce((sum, item) => sum + item.quantity, 0),
   );
   protected readonly cartTotal = computed(() => this.cart()?.totalPrice ?? 0);
+  protected readonly inboxCount = computed(() => this.conversations().length);
   protected readonly pendingOrders = computed(
     () => this.orders().filter((order) => order.orderStatus === 'PENDING').length,
   );
@@ -130,21 +149,45 @@ export class ClientDashboardPageComponent implements OnInit {
   });
 
   protected readonly favoriteSuppliers = computed(() => {
-    const suppliers = new Map<string, number>();
+    const suppliers = new Map<
+      string,
+      { supplierId: string; quantity: number; orderIds: Set<string>; totalSpending: number }
+    >();
 
     this.orders().forEach((order) => {
+      const suppliersInOrder = new Set<string>();
+
       order.items.forEach((item) => {
-        suppliers.set(item.fournisseurId, (suppliers.get(item.fournisseurId) || 0) + item.quantity);
+        const supplier =
+          suppliers.get(item.fournisseurId) ||
+          {
+            supplierId: item.fournisseurId,
+            quantity: 0,
+            orderIds: new Set<string>(),
+            totalSpending: 0,
+          };
+
+        supplier.quantity += item.quantity;
+        supplier.totalSpending += item.totalPrice || item.quantity * item.unitPrice;
+        suppliersInOrder.add(item.fournisseurId);
+        suppliers.set(item.fournisseurId, supplier);
       });
+
+      suppliersInOrder.forEach((supplierId) => suppliers.get(supplierId)?.orderIds.add(order._id));
     });
 
-    return [...suppliers.entries()]
-      .sort((first, second) => second[1] - first[1])
+    return [...suppliers.values()]
+      .sort(
+        (first, second) =>
+          second.totalSpending - first.totalSpending || second.quantity - first.quantity,
+      )
       .slice(0, 5)
-      .map(([supplierId, quantity]) => ({
-        supplierId,
-        label: `Fournisseur ${supplierId.slice(-5).toUpperCase()}`,
-        quantity,
+      .map((supplier) => ({
+        supplierId: supplier.supplierId,
+        label: `Fournisseur ${supplier.supplierId.slice(-5).toUpperCase()}`,
+        quantity: supplier.quantity,
+        orderCount: supplier.orderIds.size,
+        totalSpending: supplier.totalSpending,
       }));
   });
 
@@ -217,12 +260,25 @@ export class ClientDashboardPageComponent implements OnInit {
     this.hydrateCheckout();
     this.readRequestedTab();
     this.loadDashboard();
+    this.loadInbox();
   }
 
-  protected setTab(tab: ClientTab): void {
+  protected setTab(tab: ClientTab, keepMessages = false): void {
     this.activeTab.set(tab);
-    this.notice.set('');
-    this.error.set('');
+    this.sidebarOpen.set(false);
+
+    if (!keepMessages) {
+      this.notice.set('');
+      this.error.set('');
+    }
+  }
+
+  protected toggleSidebar(): void {
+    this.sidebarOpen.update((isOpen) => !isOpen);
+  }
+
+  protected closeSidebar(): void {
+    this.sidebarOpen.set(false);
   }
 
   protected loadDashboard(): void {
@@ -254,6 +310,21 @@ export class ClientDashboardPageComponent implements OnInit {
         markDone();
       },
       complete: markDone,
+    });
+  }
+
+  protected loadInbox(): void {
+    this.messaging.listConversations().subscribe({
+      next: (conversations) => {
+        this.conversations.set(conversations);
+        if (!this.selectedConversation() && conversations.length) {
+          this.selectConversation(conversations[0]);
+        }
+      },
+      error: () => {
+        this.conversations.set([]);
+        this.messages.set([]);
+      },
     });
   }
 
@@ -318,8 +389,8 @@ export class ClientDashboardPageComponent implements OnInit {
       next: (order) => {
         this.orders.update((orders) => [order, ...orders]);
         this.cart.update((cart) => (cart ? { ...cart, items: [], totalPrice: 0 } : cart));
-        this.activeTab.set('orders');
         this.notice.set('Commande envoyee aux fournisseurs.');
+        this.setTab('orders', true);
       },
       error: (error) => this.error.set(this.readApiError(error) || "La commande n'a pas pu etre validee."),
     });
@@ -336,8 +407,8 @@ export class ClientDashboardPageComponent implements OnInit {
         if (latestCart) {
           this.cart.set(latestCart);
         }
-        this.activeTab.set('cart');
         this.notice.set('Commande ajoutee au panier.');
+        this.setTab('cart', true);
       },
       error: () => this.error.set("La commande n'a pas pu etre ajoutee au panier."),
     });
@@ -357,22 +428,116 @@ export class ClientDashboardPageComponent implements OnInit {
     });
   }
 
+  protected updateProfileImage(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      this.error.set('Choisissez une image valide.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.profileForm.profileImage = String(reader.result || '');
+      this.profileImagePreview.set(this.profileForm.profileImage);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  protected removeProfileImage(): void {
+    this.profileForm.profileImage = '';
+    this.profileImagePreview.set('');
+  }
+
   protected changePassword(): void {
     this.notice.set('');
     this.error.set('');
 
-    this.auth.changePassword(this.passwordForm).subscribe({
+    if (this.passwordForm.newPassword !== this.passwordForm.confirmPassword) {
+      this.error.set('Confirmez le meme nouveau mot de passe.');
+      return;
+    }
+
+    if (this.passwordForm.newPassword.length < 8) {
+      this.error.set('Le nouveau mot de passe doit contenir au moins 8 caracteres.');
+      return;
+    }
+
+    this.auth.changePassword({
+      currentPassword: this.passwordForm.currentPassword,
+      newPassword: this.passwordForm.newPassword,
+    }).subscribe({
       next: () => {
         this.passwordForm.currentPassword = '';
         this.passwordForm.newPassword = '';
+        this.passwordForm.confirmPassword = '';
         this.notice.set('Mot de passe modifie.');
       },
       error: () => this.error.set("Le mot de passe n'a pas pu etre modifie."),
     });
   }
 
+  protected toggleAccountStatus(): void {
+    const currentStatus = this.user()?.status || 'ACTIVE';
+    const nextStatus = currentStatus === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE';
+    this.notice.set('');
+    this.error.set('');
+
+    this.auth.updateAccountStatus(nextStatus).subscribe({
+      next: () =>
+        this.notice.set(
+          nextStatus === 'ACTIVE' ? 'Compte active.' : 'Compte desactive. Vous pouvez le reactiver ici.',
+        ),
+      error: () => this.error.set("Le statut du compte n'a pas pu etre modifie."),
+    });
+  }
+
+  protected selectConversation(conversation: Conversation): void {
+    this.selectedConversation.set(conversation);
+    this.messaging.listMessages(conversation._id).subscribe({
+      next: (messages) => this.messages.set(messages),
+      error: () => this.messages.set([]),
+    });
+  }
+
+  protected sendReply(): void {
+    const conversation = this.selectedConversation();
+    const content = this.replyForm.content.trim();
+
+    if (!conversation || !content) {
+      return;
+    }
+
+    this.messaging.sendMessage(conversation._id, content).subscribe({
+      next: (message) => {
+        this.messages.update((messages) => [...messages, message]);
+        this.replyForm.content = '';
+        this.loadInbox();
+      },
+      error: () => this.error.set("Le message n'a pas pu etre envoye."),
+    });
+  }
+
   protected logout(): void {
     this.auth.logout();
+  }
+
+  protected conversationTitle(conversation: Conversation): string {
+    return this.partyName(conversation.fournisseurId) || 'Fournisseur';
+  }
+
+  protected conversationSubtitle(conversation: Conversation): string {
+    const partner = this.party(conversation.fournisseurId);
+    return partner?.email || conversation.lastMessage || 'Conversation fournisseur';
+  }
+
+  protected messageSender(message: Message): string {
+    return this.partyName(message.senderId) || 'Utilisateur';
   }
 
   protected productId(item: CartItem): string {
@@ -428,6 +593,7 @@ export class ClientDashboardPageComponent implements OnInit {
       PAID: 'Payee',
       FAILED: 'Echec',
       ACTIVE: 'Actif',
+      SUSPENDED: 'Desactive',
     };
 
     return labels[status] || status;
@@ -453,9 +619,12 @@ export class ClientDashboardPageComponent implements OnInit {
     }
 
     this.profileForm.name = user.name || '';
+    this.profileForm.email = user.email || '';
     this.profileForm.companyName = user.companyName || '';
     this.profileForm.phone = user.phone || '';
     this.profileForm.address = user.address || '';
+    this.profileForm.profileImage = user.profileImage || '';
+    this.profileImagePreview.set(user.profileImage || '');
   }
 
   private hydrateCheckout(): void {
@@ -475,7 +644,7 @@ export class ClientDashboardPageComponent implements OnInit {
 
   private readRequestedTab(): void {
     const requestedTab = this.route.snapshot.queryParamMap.get('tab') as ClientTab | null;
-    const allowedTabs: ClientTab[] = ['overview', 'cart', 'orders', 'account'];
+    const allowedTabs: ClientTab[] = ['overview', 'cart', 'orders', 'account', 'inbox'];
 
     if (requestedTab && allowedTabs.includes(requestedTab)) {
       this.activeTab.set(requestedTab);
@@ -493,6 +662,15 @@ export class ClientDashboardPageComponent implements OnInit {
 
   private shortMonth(value: string): string {
     return new Intl.DateTimeFormat('fr-MA', { month: 'short' }).format(new Date(value));
+  }
+
+  private party(value: string | ConversationParty): ConversationParty | null {
+    return typeof value === 'string' ? null : value;
+  }
+
+  private partyName(value: string | ConversationParty): string {
+    const party = this.party(value);
+    return party?.companyName || party?.name || '';
   }
 
   private normalize(value: string): string {

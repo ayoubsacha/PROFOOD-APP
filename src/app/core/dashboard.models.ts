@@ -4,7 +4,7 @@ export interface DashboardStat {
   label: string;
   value: string | number;
   helper?: string;
-  tone?: 'dark' | 'green' | 'blue' | 'amber' | 'red' | 'gray';
+  tone?: 'dark' | 'gold' | 'blue' | 'amber' | 'red' | 'gray';
   icon?: string;
 }
 

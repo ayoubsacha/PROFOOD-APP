@@ -14,6 +14,7 @@ function serializeUser(user) {
     companyName: user.companyName,
     phone: user.phone,
     address: user.address,
+    profileImage: user.profileImage,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   };
@@ -63,7 +64,7 @@ async function getProfile(userId) {
 }
 
 async function updateProfile(userId, payload) {
-  const allowed = ['name', 'companyName', 'phone', 'address'];
+  const allowed = ['name', 'companyName', 'phone', 'address', 'profileImage'];
   const updates = {};
 
   allowed.forEach((field) => {
@@ -82,6 +83,14 @@ async function updateProfile(userId, payload) {
   }
 
   return serializeUser(user);
+}
+
+async function updateOwnStatus(userId, status) {
+  if (!['ACTIVE', 'SUSPENDED'].includes(status)) {
+    throw new AppError('Invalid account status', 400);
+  }
+
+  return updateUser(userId, { status });
 }
 
 async function changePassword(userId, currentPassword, newPassword) {
@@ -113,6 +122,7 @@ async function createUser(payload) {
     companyName: payload.companyName,
     phone: payload.phone,
     address: payload.address,
+    profileImage: payload.profileImage,
   });
 
   return serializeUser(user);
@@ -134,7 +144,7 @@ async function listUsers(filters = {}) {
 }
 
 async function updateUser(userId, payload) {
-  const allowed = ['name', 'role', 'status', 'companyName', 'phone', 'address'];
+  const allowed = ['name', 'role', 'status', 'companyName', 'phone', 'address', 'profileImage'];
   const updates = {};
 
   allowed.forEach((field) => {
@@ -169,4 +179,5 @@ module.exports = {
   listUsers,
   updateUser,
   updateStatus,
+  updateOwnStatus,
 };

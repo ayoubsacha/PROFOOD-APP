@@ -16,6 +16,7 @@ export interface AuthUser {
   companyName?: string;
   phone?: string;
   address?: string;
+  profileImage?: string;
 }
 
 export interface LoginResult {
@@ -105,4 +106,31 @@ export interface SupplierOrder {
   checkoutInfo?: CheckoutInfo;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ConversationParty {
+  _id: string;
+  name: string;
+  email?: string;
+  companyName?: string;
+  role?: UserRole;
+}
+
+export interface Conversation {
+  _id: string;
+  clientProId: string | ConversationParty;
+  fournisseurId: string | ConversationParty;
+  lastMessage?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface Message {
+  _id: string;
+  conversationId: string;
+  senderId: string | ConversationParty;
+  receiverId: string | ConversationParty;
+  content: string;
+  isRead: boolean;
+  createdAt: string;
 }

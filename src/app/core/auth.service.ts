@@ -28,8 +28,16 @@ export class AuthService {
     companyName?: string;
     phone?: string;
     address?: string;
+    profileImage?: string;
   }): Observable<AuthUser> {
     return this.http.patch<ApiResponse<AuthUser>>(`${API_BASE_URL}/auth/me`, payload).pipe(
+      map((response) => response.data),
+      tap((user) => this.storeUser(user)),
+    );
+  }
+
+  updateAccountStatus(status: 'ACTIVE' | 'SUSPENDED'): Observable<AuthUser> {
+    return this.http.patch<ApiResponse<AuthUser>>(`${API_BASE_URL}/auth/me/status`, { status }).pipe(
       map((response) => response.data),
       tap((user) => this.storeUser(user)),
     );

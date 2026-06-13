@@ -111,11 +111,11 @@ export class AdminDashboardPageComponent implements OnInit {
 
     return [
       { label: 'Total users', value: analytics.totalUsers, helper: 'Tous roles', icon: 'U', tone: 'dark' },
-      { label: 'Clients', value: analytics.totalClients, helper: 'CLIENT_PRO', icon: 'C', tone: 'green' },
+      { label: 'Clients', value: analytics.totalClients, helper: 'CLIENT_PRO', icon: 'C', tone: 'gold' },
       { label: 'Fournisseurs', value: analytics.totalFournisseurs, helper: 'Comptes supply', icon: 'F', tone: 'blue' },
       { label: 'Produits', value: analytics.totalProducts, helper: 'Catalogue actif', icon: 'P', tone: 'gray' },
       { label: 'Commandes', value: analytics.totalOrders, helper: 'Toutes commandes', icon: 'O', tone: 'amber' },
-      { label: 'Revenue', value: `${this.money(analytics.revenue.revenue)} MAD`, helper: 'CA total', icon: 'R', tone: 'green' },
+      { label: 'Revenue', value: `${this.money(analytics.revenue.revenue)} MAD`, helper: 'CA total', icon: 'R', tone: 'gold' },
       { label: 'Demandes', value: analytics.pendingAccountRequests, helper: 'A traiter', icon: 'D', tone: 'red' },
       { label: 'Stock faible', value: analytics.lowStockCount, helper: 'Seuil 10 unites', icon: 'S', tone: 'amber' },
     ];

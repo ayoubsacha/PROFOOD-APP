@@ -21,6 +21,11 @@ const changePassword = asyncHandler(async (req, res) => {
   res.json({ success: true, message: 'Password changed successfully' });
 });
 
+const updateMyStatus = asyncHandler(async (req, res) => {
+  const user = await authService.updateOwnStatus(req.user._id, req.body.status);
+  res.json({ success: true, data: user });
+});
+
 const listUsers = asyncHandler(async (req, res) => {
   const users = await authService.listUsers(req.query);
   res.json({ success: true, data: users });
@@ -46,6 +51,7 @@ module.exports = {
   me,
   updateMe,
   changePassword,
+  updateMyStatus,
   listUsers,
   createUser,
   updateUser,

@@ -1,9 +1,15 @@
 .dashboard-layout {
+  --btn-bg: #243041;
+  --btn-bg-hover: #2b394d;
+  --btn-bg-active: #1f2a3a;
+  --btn-border: #2e3b4f;
+  --btn-border-hover: #3a4960;
+  --btn-text: #ffffff;
   min-height: 100vh;
   display: grid;
   grid-template-columns: 250px minmax(0, 1fr);
-  background: #f5f7fa;
-  color: #171b22;
+  background: #0f1115;
+  color: #ffffff;
 }
 
 .dashboard-sidebar {
@@ -14,8 +20,8 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  border-right: 1px solid #e3e8ef;
-  background: #ffffff;
+  border-right: 1px solid #2d3440;
+  background: #10141a;
 }
 
 .brand {
@@ -25,7 +31,7 @@
   align-items: center;
   border-radius: 8px;
   overflow: hidden;
-  background: #ffffff;
+  background: #171b22;
 }
 
 .brand img {
@@ -36,7 +42,7 @@
 }
 
 .nav-label {
-  color: #7b8794;
+  color: #8f98a8;
   font-size: 0.68rem;
   font-weight: 950;
   text-transform: uppercase;
@@ -49,7 +55,7 @@
   grid-template-columns: 38px minmax(0, 1fr);
   gap: 0.15rem 0.65rem;
   align-items: center;
-  background: #f0f3f7;
+  background: #171b22;
 }
 
 .avatar {
@@ -60,7 +66,7 @@
   background:
     radial-gradient(circle at 50% 35%, #ffffff 0 18%, transparent 19%),
     radial-gradient(circle at 50% 82%, #ffffff 0 30%, transparent 31%),
-    #171b22;
+    #a1623f;
 }
 
 .user-card strong,
@@ -70,7 +76,7 @@
 }
 
 .user-card small {
-  color: #65758b;
+  color: #8f98a8;
 }
 
 .dashboard-nav {
@@ -81,10 +87,10 @@
 .dashboard-nav button,
 .logout-button {
   min-height: 42px;
-  border: 0;
-  border-radius: 8px;
+  border: 1px solid transparent;
+  border-radius: 14px;
   padding: 0 0.85rem;
-  color: #536273;
+  color: #c7ced9;
   background: transparent;
   cursor: pointer;
   font-weight: 850;
@@ -94,14 +100,16 @@
 .dashboard-nav button:hover,
 .dashboard-nav button.is-active {
   color: #ffffff;
-  background: #171b22;
-  box-shadow: 0 12px 24px rgba(17, 24, 39, 0.18);
+  border-color: var(--btn-border-hover);
+  background: var(--btn-bg-hover);
+  box-shadow: inset 3px 0 0 var(--btn-border-hover);
 }
 
 .logout-button {
   margin-top: auto;
-  color: #171b22;
-  background: #edf1f5;
+  border-color: var(--btn-border);
+  color: var(--btn-text);
+  background: var(--btn-bg);
   text-align: center;
 }
 
@@ -119,8 +127,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  border-bottom: 1px solid #e3e8ef;
-  background: #ffffff;
+  border-bottom: 1px solid #2d3440;
+  background: #171b22;
   margin-inline: -1.25rem;
   padding-inline: 1.25rem;
 }
@@ -133,13 +141,30 @@
 
 .dashboard-topbar button {
   min-height: 38px;
-  border: 0;
-  border-radius: 8px;
+  border: 1px solid var(--btn-border);
+  border-radius: 14px;
   padding: 0 1rem;
-  color: #ffffff;
-  background: #171b22;
+  color: var(--btn-text);
+  background: var(--btn-bg);
   cursor: pointer;
-  font-weight: 900;
+  font-weight: 700;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease;
+}
+
+.dashboard-topbar button:hover,
+.dashboard-topbar button:focus-visible,
+.logout-button:hover,
+.logout-button:focus-visible {
+  border-color: var(--btn-border-hover);
+  background: var(--btn-bg-hover);
+  outline: none;
+}
+
+.dashboard-topbar button:active,
+.logout-button:active {
+  background: var(--btn-bg-active);
 }
 
 .dashboard-topbar div button {
@@ -147,12 +172,12 @@
   min-height: 34px;
   padding: 0;
   border-radius: 50%;
-  color: #536273;
+  color: #c7ced9;
   background: transparent;
 }
 
 .dashboard-topbar span {
-  color: #536273;
+  color: #c7ced9;
   font-weight: 850;
 }
 
@@ -161,7 +186,7 @@
 }
 
 .dashboard-header span {
-  color: #248a3d;
+  color: #d6a85a;
   font-size: 0.78rem;
   font-weight: 950;
   text-transform: uppercase;
@@ -174,7 +199,7 @@
 
 .dashboard-header p {
   margin: 0.25rem 0 0;
-  color: #65758b;
+  color: #8f98a8;
 }
 
 @media (max-width: 1080px) {

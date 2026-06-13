@@ -1,14 +1,14 @@
 .empty-state {
   min-height: 180px;
   padding: 1.4rem;
-  border: 1px dashed #cfd8e3;
+  border: 1px dashed #2d3440;
   border-radius: 8px;
   display: grid;
   place-items: center;
   align-content: center;
   gap: 0.45rem;
   text-align: center;
-  background: #ffffff;
+  background: #171b22;
 }
 
 .empty-state span {
@@ -17,8 +17,8 @@
   border-radius: 50%;
   display: grid;
   place-items: center;
-  color: #171b22;
-  background: #ecfdf3;
+  color: #d6a85a;
+  background: rgba(214, 168, 90, 0.16);
   font-size: 0.7rem;
   font-weight: 950;
 }
@@ -29,14 +29,14 @@
 }
 
 .empty-state h2 {
-  color: #171b22;
+  color: #ffffff;
   font-size: 1.05rem;
 }
 
 .empty-state p {
-  color: #768394;
+  color: #8f98a8;
 }
 
 .empty-state strong {
-  color: #248a3d;
+  color: #d6a85a;
 }

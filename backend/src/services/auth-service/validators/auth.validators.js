@@ -11,6 +11,7 @@ const updateProfileValidator = [
   body('companyName').optional().isString().trim().isLength({ max: 160 }),
   body('phone').optional().isString().trim().isLength({ max: 40 }),
   body('address').optional().isString().trim().isLength({ max: 240 }),
+  body('profileImage').optional().isString().isLength({ max: 5000000 }),
 ];
 
 const changePasswordValidator = [
@@ -29,6 +30,7 @@ const createUserValidator = [
   body('companyName').optional().isString().trim().isLength({ max: 160 }),
   body('phone').optional().isString().trim().isLength({ max: 40 }),
   body('address').optional().isString().trim().isLength({ max: 240 }),
+  body('profileImage').optional().isString().isLength({ max: 5000000 }),
 ];
 
 const updateUserValidator = [
@@ -39,11 +41,16 @@ const updateUserValidator = [
   body('companyName').optional().isString().trim().isLength({ max: 160 }),
   body('phone').optional().isString().trim().isLength({ max: 40 }),
   body('address').optional().isString().trim().isLength({ max: 240 }),
+  body('profileImage').optional().isString().isLength({ max: 5000000 }),
 ];
 
 const updateStatusValidator = [
   ...userIdValidator,
   body('status').isIn(USER_STATUSES).withMessage('Invalid user status'),
+];
+
+const updateOwnStatusValidator = [
+  body('status').isIn(['ACTIVE', 'SUSPENDED']).withMessage('Invalid account status'),
 ];
 
 const listUsersValidator = [
@@ -58,5 +65,6 @@ module.exports = {
   createUserValidator,
   updateUserValidator,
   updateStatusValidator,
+  updateOwnStatusValidator,
   listUsersValidator,
 };

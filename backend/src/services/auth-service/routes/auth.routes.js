@@ -26,5 +26,12 @@ router.patch(
   validateRequest,
   authController.changePassword,
 );
+router.patch(
+  '/me/status',
+  authMiddleware,
+  validators.updateOwnStatusValidator,
+  validateRequest,
+  authController.updateMyStatus,
+);
 
 module.exports = router;

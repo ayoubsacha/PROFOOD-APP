@@ -1,9 +1,9 @@
 .data-table-card {
   padding: 1.2rem;
-  border: 1px solid #e6ebf2;
+  border: 1px solid #2d3440;
   border-radius: 8px;
-  background: #ffffff;
-  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.05);
+  background: #171b22;
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.24);
 }
 
 .data-table-card header {
@@ -15,14 +15,14 @@
 
 .data-table-card h2 {
   margin: 0;
-  color: #171b22;
+  color: #ffffff;
   font-size: 1rem;
 }
 
 .data-table-card p,
 .empty-text {
   margin: 0.25rem 0 0;
-  color: #768394;
+  color: #8f98a8;
 }
 
 .table-wrap {
@@ -39,19 +39,19 @@ table {
 th,
 td {
   padding: 0.74rem 0.55rem;
-  border-bottom: 1px solid #edf1f5;
+  border-bottom: 1px solid #2d3440;
   text-align: left;
   vertical-align: middle;
 }
 
 th {
-  color: #768394;
+  color: #8f98a8;
   font-size: 0.72rem;
   font-weight: 950;
   text-transform: uppercase;
 }
 
 td {
-  color: #29313d;
+  color: #c7ced9;
   font-weight: 750;
 }
