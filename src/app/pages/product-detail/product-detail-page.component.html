@@ -1,0 +1,191 @@
+<main class="product-detail-page">
+  <header class="product-breadcrumb">
+    <a routerLink="/products">‹ Retour produits</a>
+    @if (product(); as product) {
+      <span>PROFOOD Marketplace</span>
+      <span>{{ product.family }}</span>
+      <span>{{ product.name }}</span>
+    }
+  </header>
+
+  @if (product(); as product) {
+    <section class="product-hero">
+      <section class="product-media">
+        <img [src]="product.imageUrl" [alt]="product.imageAlt" />
+      </section>
+
+      <section class="product-summary">
+        <a routerLink="/products" class="store-link"
+          >Visiter l'espace {{ product.supplier.name }}</a
+        >
+        <h1>{{ product.name }} - {{ product.family }}</h1>
+
+        <div class="rating-line" aria-label="Note produit">
+          <strong>{{ displayedRatingText() }}</strong>
+          <div class="stars" aria-hidden="true">
+            @for (star of stars; track star) {
+              <span [class.is-active]="star <= roundedRating()">★</span>
+            }
+          </div>
+          <span>{{ displayedRatingCount() }} avis</span>
+        </div>
+
+        <p class="sales-note">100+ demandes professionnelles le mois dernier</p>
+
+        <div class="unit-price">
+          <span>Prix unitaire</span>
+          <strong>{{ unitPriceText() }}</strong>
+        </div>
+
+        <p class="product-description">{{ product.description }}</p>
+
+        <section class="option-section">
+          <h2>Caractéristiques rapides</h2>
+          <div class="option-grid">
+            @for (characteristic of product.cardCharacteristics; track characteristic) {
+              <span>{{ characteristic }}</span>
+            }
+          </div>
+        </section>
+
+        <section class="quantity-control">
+          <label for="quantity-range">
+            <span>Quantité</span>
+            <strong>{{ quantity() }} {{ product.unit }}</strong>
+          </label>
+          <input
+            id="quantity-range"
+            type="range"
+            [min]="product.minimumQuantity"
+            [max]="product.maximumQuantity"
+            [step]="product.quantityStep"
+            [value]="quantity()"
+            (input)="updateQuantity($event)"
+          />
+          <div class="quantity-control__limits">
+            <span>{{ product.minimumQuantity }} {{ product.unit }}</span>
+            <span>{{ product.maximumQuantity }} {{ product.unit }}</span>
+          </div>
+        </section>
+      </section>
+
+      <aside class="purchase-card" aria-label="Résumé achat">
+        <span class="purchase-card__currency">MAD</span>
+        <strong class="purchase-card__price">{{ totalPriceText() }}</strong>
+        <p>{{ deliveryText() }}</p>
+        <p class="stock">En stock</p>
+
+        <div class="purchase-card__quantity">
+          <span>Quantité choisie</span>
+          <strong>{{ quantity() }} {{ product.unit }}</strong>
+        </div>
+
+        <button type="button" class="quote-button" (click)="addToCart()">Ajouter au panier</button>
+        @if (cartMessage()) {
+          <p class="cart-message">{{ cartMessage() }}</p>
+        }
+        <button type="button" class="buy-button">Demander un devis</button>
+
+        <dl>
+          <div>
+            <dt>Fournisseur</dt>
+            <dd>{{ product.supplier.name }}</dd>
+          </div>
+          <div>
+            <dt>Location</dt>
+            <dd>{{ product.supplier.location }}</dd>
+          </div>
+          <div>
+            <dt>Paiement</dt>
+            <dd>Transaction sécurisée</dd>
+          </div>
+        </dl>
+      </aside>
+    </section>
+
+    <section class="detail-content">
+      <div class="detail-main">
+        <section class="about-panel">
+          <h2>About this item</h2>
+          <ul>
+            @for (characteristic of product.characteristics; track characteristic) {
+              <li>{{ characteristic }}</li>
+            }
+          </ul>
+        </section>
+
+        <details open>
+          <summary>Item details</summary>
+          <dl>
+            <div>
+              <dt>Famille</dt>
+              <dd>{{ product.family }}</dd>
+            </div>
+            <div>
+              <dt>Condition minimum</dt>
+              <dd>{{ product.minimumQuantity }} {{ product.unit }}</dd>
+            </div>
+            <div>
+              <dt>Fournisseur</dt>
+              <dd>{{ product.supplier.name }}</dd>
+            </div>
+            <div>
+              <dt>Location fournisseur</dt>
+              <dd>{{ product.supplier.location }}</dd>
+            </div>
+            <div>
+              <dt>Téléphone</dt>
+              <dd>{{ product.supplier.phone }}</dd>
+            </div>
+            <div>
+              <dt>Email</dt>
+              <dd>{{ product.supplier.email }}</dd>
+            </div>
+          </dl>
+        </details>
+
+        <section class="client-review-panel">
+          <h2>Noter ce produit</h2>
+          <div class="client-rating" aria-label="Noter ce produit">
+            @for (star of stars; track star) {
+              <button
+                type="button"
+                [class.is-active]="star <= (clientRating() || 0)"
+                [attr.aria-label]="'Noter ' + product.name + ' ' + star + ' sur 5'"
+                (click)="rateProduct(star)"
+              >
+                ★
+              </button>
+            }
+          </div>
+
+          @if (clientRating(); as rating) {
+            <p>Votre note: {{ rating }}/5</p>
+          } @else {
+            <p>Entrez dans le détail du produit pour laisser votre note.</p>
+          }
+        </section>
+
+        @if (relatedProduct(); as related) {
+          <section class="related-product">
+            <h2>Competitively priced item</h2>
+            <a [routerLink]="['/products', related.slug]">
+              <img [src]="related.imageUrl" [alt]="related.imageAlt" />
+              <div>
+                <strong>{{ related.name }}</strong>
+                <span>{{ related.rating }}/5 · {{ related.ratingCount }} avis</span>
+                <p>{{ related.priceMad }} MAD / {{ related.unit }}</p>
+              </div>
+            </a>
+          </section>
+        }
+      </div>
+    </section>
+  } @else {
+    <section class="product-not-found">
+      <h1>Produit introuvable</h1>
+      <p>Ce produit n'est pas disponible dans le catalogue.</p>
+      <a routerLink="/products">Voir tous les produits</a>
+    </section>
+  }
+</main>

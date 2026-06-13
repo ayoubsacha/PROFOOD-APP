@@ -1,0 +1,96 @@
+<header class="site-header">
+  <div class="utility-bar" aria-label="Options rapides">
+    <div class="utility-bar__inner">
+      <div class="utility-bar__left">
+        <span class="flag" aria-hidden="true"></span>
+        <button type="button">Français</button>
+        <button type="button">MAD</button>
+      </div>
+
+      <div class="utility-bar__right">
+        <button type="button" aria-label="Partager">↗</button>
+        <button type="button" aria-label="Informations">i</button>
+        <button type="button" aria-label="Favoris">♡</button>
+        <button type="button" aria-label="Panier">0</button>
+        @if (currentUser(); as user) {
+          <button type="button" class="login-button" (click)="logout()">{{ user.name }}</button>
+        } @else {
+          <a routerLink="/login" class="login-button">Se Connecter</a>
+        }
+        <button type="button" aria-label="Paramètres">⚙</button>
+        <button
+          type="button"
+          [attr.aria-label]="darkMode() ? 'Activer le mode clair' : 'Activer le mode sombre'"
+          (click)="toggleTheme()"
+        >
+          {{ darkMode() ? '☀' : '☾' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-shell">
+    <a class="logo" href="#top" aria-label="PlaceToInvest accueil">
+      <span>PLACE<span>TO</span>INVEST</span>
+    </a>
+
+    <button
+      class="menu-toggle"
+      type="button"
+      aria-label="Ouvrir le menu"
+      [attr.aria-expanded]="mobileMenuOpen()"
+      (click)="toggleMobileMenu()"
+    >
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+
+    <nav class="nav-area" [class.nav-area--open]="mobileMenuOpen()" (mouseleave)="clearMega()">
+      <div class="nav-list" aria-label="Navigation principale">
+        @for (item of navItems; track item.label) {
+          <a
+            class="nav-link"
+            [class.nav-link--mega]="item.megaKey"
+            [href]="item.href"
+            (mouseenter)="openMega(item)"
+            (focus)="openMega(item)"
+            (click)="handleNavClick($event, item)"
+          >
+            <span>{{ item.label }}</span>
+            @if (item.megaKey) {
+              <span class="nav-caret" aria-hidden="true">⌄</span>
+            }
+          </a>
+        }
+      </div>
+
+      @if (activeMegaGroups(); as groups) {
+        <div class="mega-panel" (mouseenter)="activeMegaKey.set(activeMegaKey())">
+          <div class="mega-panel__heading">
+            <span>{{ activeMegaLabel() }}</span>
+            <strong>Explorer</strong>
+          </div>
+
+          <div class="mega-panel__grid">
+            @for (group of groups; track group.title) {
+              <section class="mega-group">
+                <h3>{{ group.title }}</h3>
+                @for (link of group.links; track link) {
+                  <a href="#categories" (click)="mobileMenuOpen.set(false)">{{ link }}</a>
+                }
+              </section>
+            }
+          </div>
+        </div>
+      }
+    </nav>
+
+    <div class="header-actions">
+      <a class="profile-button" routerLink="/account-request" aria-label="Demander un compte">
+        <span class="profile-avatar" aria-hidden="true"></span>
+        <span class="profile-label">Compte</span>
+      </a>
+    </div>
+  </div>
+</header>

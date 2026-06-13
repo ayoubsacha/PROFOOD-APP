@@ -1,0 +1,70 @@
+<main class="request-page">
+  <section class="request-panel">
+    <a class="back-link" routerLink="/">Retour accueil</a>
+
+    <header>
+      <span>Acces professionnel</span>
+      <h1>Demande de compte</h1>
+      <p>Les produits sont visibles uniquement apres activation du compte.</p>
+    </header>
+
+    <form (ngSubmit)="submit()">
+      <div class="form-grid">
+        <label>
+          <span>Nom</span>
+          <input name="name" required [(ngModel)]="form.name" />
+        </label>
+
+        <label>
+          <span>Email</span>
+          <input type="email" name="email" required [(ngModel)]="form.email" />
+        </label>
+
+        <label>
+          <span>Type de compte</span>
+          <select name="requestedRole" required [(ngModel)]="form.requestedRole">
+            <option value="CLIENT_PRO">Client pro</option>
+            <option value="FOURNISSEUR">Fournisseur</option>
+          </select>
+        </label>
+
+        <label>
+          <span>Entreprise</span>
+          <input name="companyName" [(ngModel)]="form.companyName" />
+        </label>
+
+        <label>
+          <span>Telephone</span>
+          <input name="phone" [(ngModel)]="form.phone" />
+        </label>
+
+        <label>
+          <span>Adresse</span>
+          <input name="address" [(ngModel)]="form.address" />
+        </label>
+      </div>
+
+      <label>
+        <span>Message</span>
+        <textarea name="message" rows="4" [(ngModel)]="form.message"></textarea>
+      </label>
+
+      @if (message()) {
+        <p class="form-message form-message--success">{{ message() }}</p>
+      }
+
+      @if (error()) {
+        <p class="form-message form-message--error">{{ error() }}</p>
+      }
+
+      <button type="submit" [disabled]="loading()">
+        {{ loading() ? 'Envoi...' : 'Envoyer la demande' }}
+      </button>
+    </form>
+
+    <footer>
+      <span>Compte deja actif?</span>
+      <a routerLink="/login">Se connecter</a>
+    </footer>
+  </section>
+</main>

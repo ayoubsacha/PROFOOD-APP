@@ -1,0 +1,127 @@
+<section class="bottom-showcases" aria-label="Espaces marketplace">
+  <article class="showcase-section">
+    <header class="showcase-header">
+      <div class="showcase-title">
+        <span class="title-bar" aria-hidden="true"></span>
+        <h2>GRP 999</h2>
+      </div>
+      <a href="#categories">Accéder à l’espace Grp 999 ›</a>
+    </header>
+
+    <div class="showcase-layout showcase-layout--event">
+      <aside class="showcase-filter" aria-label="Filtrer GRP 999">
+        <div class="showcase-filter__header">
+          <span class="filter-icon" aria-hidden="true"></span>
+          <h3>Filtrer Votre Recherche</h3>
+        </div>
+
+        <form class="showcase-filter__form">
+          <label>
+            <span class="visually-hidden">Recherche par titre</span>
+            <input type="search" placeholder="Recherche Par Titre" />
+          </label>
+          <label>
+            <span class="visually-hidden">Catégorie</span>
+            <select>
+              <option>Catégorie</option>
+              <option>Salons & Expositions</option>
+              <option>Events</option>
+            </select>
+          </label>
+        </form>
+      </aside>
+
+      <article class="event-card">
+        <div class="event-card__image" aria-hidden="true">
+          <span class="event-card__figure event-card__figure--one"></span>
+          <span class="event-card__figure event-card__figure--two"></span>
+        </div>
+        <div class="event-card__body">
+          <h3><span aria-hidden="true">▣</span> Salons & Expositions</h3>
+          <strong>Event</strong>
+          <p>May 28, 2026-May 31, 2026</p>
+          <p>Accès Libre (Gratuite)</p>
+          <p>Présentiel Uniquement</p>
+        </div>
+      </article>
+    </div>
+  </article>
+
+  <article class="showcase-section showcase-section--professionals">
+    <header class="showcase-header">
+      <div class="showcase-title">
+        <span class="title-bar" aria-hidden="true"></span>
+        <span class="title-icon" aria-hidden="true">▣</span>
+        <h2>ACTEURS PROFESSIONNELS</h2>
+      </div>
+      <a href="#categories">Accéder à l’espace Acteurs professionnels ›</a>
+    </header>
+
+    <div class="showcase-layout showcase-layout--professionals">
+      <aside class="showcase-filter" aria-label="Filtrer acteurs professionnels">
+        <div class="showcase-filter__header">
+          <span class="filter-icon" aria-hidden="true"></span>
+          <h3>Filtrer Votre Recherche</h3>
+        </div>
+
+        <form class="showcase-filter__form">
+          <label>
+            <span class="visually-hidden">Nom structure</span>
+            <input type="search" placeholder="Nom Structure" />
+          </label>
+          <label>
+            <span class="visually-hidden">Taxonomie d’annonce</span>
+            <select>
+              <option>Taxonomie D’annonce</option>
+              <option>Électronique</option>
+              <option>Livraison</option>
+              <option>Maintenance</option>
+            </select>
+          </label>
+        </form>
+      </aside>
+
+      <div class="professionals-carousel">
+        <button
+          class="section-arrow section-arrow--left"
+          type="button"
+          aria-label="Acteur précédent"
+        >
+          ‹
+        </button>
+
+        <div class="professional-grid">
+          @for (professional of professionals; track professional.email) {
+            <article class="professional-card">
+              <div
+                class="professional-card__logo"
+                [class.professional-card__logo--enterprise]="professional.logoType === 'enterprise'"
+                aria-hidden="true"
+              >
+                <span>{{ professional.logo }}</span>
+              </div>
+              <h3>{{ professional.name }}</h3>
+              <p><span aria-hidden="true">▧</span> {{ professional.activity }}</p>
+              <div class="professional-card__divider"></div>
+              <a href="tel:{{ professional.phone }}"
+                ><span aria-hidden="true">☏</span> {{ professional.phone }}</a
+              >
+              <a href="mailto:{{ professional.email }}"
+                ><span aria-hidden="true">✉</span> {{ professional.email }}</a
+              >
+            </article>
+          }
+        </div>
+
+        <button
+          class="section-arrow section-arrow--right"
+          type="button"
+          aria-label="Acteur suivant"
+        >
+          ›
+        </button>
+        <span class="carousel-dot" aria-hidden="true"></span>
+      </div>
+    </div>
+  </article>
+</section>

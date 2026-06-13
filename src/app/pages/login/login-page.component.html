@@ -1,0 +1,64 @@
+<main class="auth-page">
+  <section class="auth-shell">
+    <aside class="auth-showcase" aria-label="PROFOOD Marketplace">
+      <a class="brand" routerLink="/login" aria-label="Profood">
+        <img src="/assets/profood-logo.png" alt="Profood" />
+      </a>
+
+      <div class="showcase-card">
+        <span class="showcase-icon" aria-hidden="true"></span>
+        <h2>Marketplace B2B</h2>
+        <p>Stock, commandes et ventes connectes dans un espace professionnel securise.</p>
+      </div>
+    </aside>
+
+    <section class="auth-panel">
+      <a class="back-link" routerLink="/account-request">Demander un acces</a>
+
+      <header>
+        <span>Bienvenue</span>
+        <h1>Se connecter</h1>
+        <p>Entrez vos identifiants pour ouvrir votre espace.</p>
+      </header>
+
+      <form (ngSubmit)="submit()">
+        <label>
+          <span>Email</span>
+          <input
+            type="email"
+            name="email"
+            autocomplete="email"
+            placeholder="client@profood.com"
+            required
+            [(ngModel)]="form.email"
+          />
+        </label>
+
+        <label>
+          <span>Mot de passe</span>
+          <input
+            type="password"
+            name="password"
+            autocomplete="current-password"
+            placeholder="Votre mot de passe"
+            required
+            [(ngModel)]="form.password"
+          />
+        </label>
+
+        @if (error()) {
+          <p class="form-message form-message--error">{{ error() }}</p>
+        }
+
+        <button type="submit" [disabled]="loading()">
+          {{ loading() ? 'Connexion...' : 'Se connecter' }}
+        </button>
+      </form>
+
+      <footer>
+        <span>Pas encore de compte actif?</span>
+        <a routerLink="/account-request">Creer une demande</a>
+      </footer>
+    </section>
+  </section>
+</main>

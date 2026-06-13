@@ -1,0 +1,172 @@
+<nav class="marketplace-menu" aria-label="Menu marketplace">
+  <div class="marketplace-menu__inner">
+    @for (row of menuRows; track $index) {
+      <div class="marketplace-menu__row">
+        @for (item of row; track item.label) {
+          @if (item.label === 'PROFOOD MARKETPLACE') {
+            <button
+              type="button"
+              class="marketplace-menu__item marketplace-menu__item--button"
+              [class.marketplace-menu__item--active]="profoodOpen()"
+              [attr.aria-expanded]="profoodOpen()"
+              aria-controls="profood-hierarchy"
+              (click)="toggleProfood($event)"
+            >
+              <span>{{ item.label }}</span>
+              <span class="marketplace-menu__chevron" aria-hidden="true">⌄</span>
+            </button>
+          } @else {
+            <a href="#opportunities" class="marketplace-menu__item" (click)="closeHierarchy()">
+              @if (item.icon) {
+                <span class="marketplace-menu__icon" aria-hidden="true">{{ item.icon }}</span>
+              }
+              <span>{{ item.label }}</span>
+              <span class="marketplace-menu__chevron" aria-hidden="true">⌄</span>
+            </a>
+          }
+        }
+      </div>
+    }
+  </div>
+
+  @if (profoodOpen()) {
+    <div id="profood-hierarchy" class="hierarchy-menu" aria-label="Sous-menu Profood Marketplace">
+      <div class="hierarchy-menu__inner">
+        <div class="hierarchy-menu__column hierarchy-menu__column--primary">
+          <a href="#opportunities" class="hierarchy-menu__all" (click)="closeHierarchy()">
+            <span aria-hidden="true">↗</span>
+            <strong>Voir tout PROFOOD MARKETPLACE</strong>
+          </a>
+
+          @for (category of profoodCategories; track category.label; let index = $index) {
+            <button
+              type="button"
+              class="hierarchy-menu__category"
+              [class.hierarchy-menu__category--active]="selectedProfoodIndex() === index"
+              (click)="selectProfood(index)"
+            >
+              <span>{{ category.label }}</span>
+              <span aria-hidden="true">›</span>
+            </button>
+          }
+        </div>
+
+        @if (selectedProfood(); as category) {
+          <div class="hierarchy-menu__column hierarchy-menu__column--secondary">
+            @for (child of category.children; track child.label; let index = $index) {
+              <button
+                type="button"
+                class="hierarchy-menu__child"
+                [class.hierarchy-menu__child--active]="selectedProfoodChildIndex() === index"
+                (click)="selectProfoodChild(index)"
+              >
+                <span>{{ child.label }}</span>
+                <span aria-hidden="true">›</span>
+              </button>
+            }
+          </div>
+        }
+
+        @if (selectedProfoodChild(); as child) {
+          <div class="hierarchy-menu__column hierarchy-menu__column--tertiary">
+            @if (child.children.length) {
+              @for (item of child.children; track item; let index = $index) {
+                <button
+                  type="button"
+                  class="hierarchy-menu__leaf"
+                  [class.hierarchy-menu__leaf--active]="selectedProfoodLeafIndex() === index"
+                  (click)="selectProfoodLeaf(index)"
+                >
+                  <span>{{ item }}</span>
+                  <span aria-hidden="true">›</span>
+                </button>
+              }
+            } @else {
+              <span class="hierarchy-menu__empty-text">Aucun élément trouvé</span>
+            }
+          </div>
+        }
+
+        @if (selectedProfoodLeaf(); as productGroup) {
+          <div class="hierarchy-menu__products">
+            <header class="product-preview__header">
+              <div>
+                <span>Produits</span>
+                <h3>{{ productGroup }}</h3>
+              </div>
+              <a
+                routerLink="/products"
+                [queryParams]="{ family: productGroup }"
+                (click)="closeHierarchy()"
+                >Full product page ›</a
+              >
+            </header>
+
+            <div class="product-preview__layout">
+              <div class="product-preview__slider" aria-label="Produits suggérés">
+                <button
+                  class="product-preview__arrow"
+                  type="button"
+                  aria-label="Produit précédent"
+                  (click)="previousProductSlide()"
+                >
+                  ‹
+                </button>
+
+                <div class="product-preview__grid">
+                  @for (product of visibleProductPreviewCards(); track product.name) {
+                    <article
+                      class="product-preview-card"
+                      [routerLink]="product.slug ? ['/products', product.slug] : null"
+                      [attr.role]="product.slug ? 'link' : null"
+                      (click)="product.slug && closeHierarchy()"
+                    >
+                      <div
+                        class="product-preview-card__image"
+                        [class]="
+                          'product-preview-card__image product-preview-card__image--' +
+                          product.visual
+                        "
+                      >
+                        @if (product.imageUrl) {
+                          <img
+                            [src]="product.imageUrl"
+                            [alt]="product.imageAlt || product.name"
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        }
+                        <span>★ {{ product.category }}</span>
+                      </div>
+                      <div class="product-preview-card__body">
+                        <strong>{{ product.price }}</strong>
+                        <p>{{ product.name }}</p>
+                        <div class="product-preview-card__meta">
+                          <span>{{ product.status }}</span>
+                          @if (product.characteristics?.[1]; as characteristic) {
+                            <span>{{ characteristic }}</span>
+                          }
+                        </div>
+                        <small>Publié par</small>
+                        <b>{{ product.supplier }}</b>
+                      </div>
+                    </article>
+                  }
+                </div>
+
+                <button
+                  class="product-preview__arrow"
+                  type="button"
+                  aria-label="Produit suivant"
+                  (click)="nextProductSlide()"
+                >
+                  ›
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</nav>

@@ -1,0 +1,102 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.opportunity-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--card-bg);
+  box-shadow: var(--shadow);
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease;
+}
+
+.opportunity-card:hover {
+  transform: translateY(-6px);
+  border-color: color-mix(in srgb, var(--accent-color) 46%, var(--border-color));
+  box-shadow: var(--strong-shadow);
+}
+
+.opportunity-card__image {
+  min-height: 172px;
+  padding: 1rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  background:
+    linear-gradient(180deg, rgba(5, 12, 29, 0.08), rgba(5, 12, 29, 0.5)),
+    radial-gradient(
+      circle at 22% 18%,
+      color-mix(in srgb, var(--card-accent) 78%, white),
+      transparent 30%
+    ),
+    url('/assets/business-hero.png') center / 180% auto no-repeat;
+}
+
+.opportunity-card__image span {
+  padding: 0.42rem 0.62rem;
+  border-radius: 999px;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(12px);
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.opportunity-card__body {
+  padding: 1.15rem;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.opportunity-card__category {
+  color: var(--accent-color);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+h3 {
+  margin: 0.5rem 0 0;
+  color: var(--text-color);
+  font-size: 1.12rem;
+}
+
+p {
+  margin: 0.6rem 0 1.2rem;
+  color: var(--muted-color);
+  line-height: 1.55;
+}
+
+a {
+  width: max-content;
+  margin-top: auto;
+  padding: 0.68rem 0.9rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-color);
+  background: var(--soft-bg);
+  font-size: 0.85rem;
+  font-weight: 900;
+  transition:
+    color 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+a:hover,
+a:focus-visible {
+  color: #ffffff;
+  border-color: transparent;
+  background: var(--accent-color);
+  outline: none;
+}

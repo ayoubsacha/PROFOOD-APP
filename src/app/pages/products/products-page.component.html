@@ -1,0 +1,135 @@
+<main class="products-page">
+  <header>
+    <a routerLink="/">Retour accueil</a>
+    <h1>{{ selectedFamily() || 'Full product page' }}</h1>
+    @if (selectedFamily(); as family) {
+      <p>Catalogue complet pour {{ family }}.</p>
+      <a class="products-page__all-link" routerLink="/products">Voir tout le catalogue</a>
+    } @else {
+      <p>Catalogue complet des produits PROFOOD Marketplace.</p>
+    }
+  </header>
+
+  <div class="products-layout">
+    <aside class="products-toolbar" aria-label="Filtres produits">
+      <span class="products-toolbar__icon" aria-hidden="true"></span>
+      <h2>Filtrer Votre Recherche</h2>
+
+      <div class="products-toolbar__grid">
+        <label>
+          <span class="sr-only">Recherche par titre</span>
+          <input
+            type="search"
+            placeholder="Recherche Par Titre"
+            [value]="nameSearch()"
+            (input)="updateNameSearch($event)"
+          />
+        </label>
+
+        <label>
+          <span class="sr-only">Recherche par marque</span>
+          <input
+            type="search"
+            placeholder="Recherche Par Marque"
+            [value]="brandSearch()"
+            (input)="updateBrandSearch($event)"
+          />
+        </label>
+
+        <label>
+          <span class="sr-only">Categorie</span>
+          <select [value]="categoryFilter()" (change)="updateCategoryFilter($event)">
+            <option value="">Categorie</option>
+            @for (product of categoryOptions(); track product.slug) {
+              <option [value]="product.slug">{{ product.name }}</option>
+            }
+          </select>
+        </label>
+
+        <label>
+          <span class="sr-only">Caracteristique</span>
+          <select [value]="characteristicFilter()" (change)="updateCharacteristicFilter($event)">
+            <option value="">Caracteristique</option>
+            @for (characteristic of characteristicOptions(); track characteristic) {
+              <option [value]="characteristic">{{ characteristic }}</option>
+            }
+          </select>
+        </label>
+
+        <label>
+          <span class="sr-only">Ordre</span>
+          <select [value]="sortOrder()" (change)="updateSortOrder($event)">
+            <option value="default">Ordre</option>
+            <option value="price-asc">Prix croissant</option>
+            <option value="price-desc">Prix decroissant</option>
+            <option value="characteristic-asc">Caracteristique A-Z</option>
+            <option value="characteristic-desc">Caracteristique Z-A</option>
+          </select>
+        </label>
+      </div>
+
+      @if (hasActiveFilters()) {
+        <button type="button" class="products-toolbar__reset" (click)="resetFilters()">
+          Reinitialiser
+        </button>
+      }
+    </aside>
+
+    <section class="products-results">
+      <div class="products-results__bar">
+        <strong>{{ products().length }} produits</strong>
+        @if (selectedCategoryName()) {
+          <span>{{ selectedCategoryName() }}</span>
+        } @else if (selectedFamily()) {
+          <span>{{ selectedFamily() }}</span>
+        } @else {
+          <span>Toutes les categories</span>
+        }
+      </div>
+
+      @if (products().length) {
+        <section class="products-grid" aria-label="Tous les produits">
+          @for (product of products(); track product.slug) {
+            <a class="product-card" [routerLink]="['/products', product.slug]">
+              <div class="product-card__image">
+                <img
+                  [src]="product.imageUrl"
+                  [alt]="product.imageAlt"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+
+              <div class="product-card__body">
+                <span class="product-card__family">{{ product.family }}</span>
+                <h2>{{ product.name }}</h2>
+                <strong class="product-card__price">{{ priceText(product) }}</strong>
+                <p class="product-card__supplier">Fournisseur: {{ product.supplier.name }}</p>
+
+                <div class="product-card__rating" aria-label="Note produit">
+                  <div class="product-card__stars" aria-hidden="true">
+                    @for (star of stars; track star) {
+                      <span [class.is-active]="star <= roundedRating(product)">★</span>
+                    }
+                  </div>
+                  <span>{{ product.rating }}/5 - {{ product.ratingCount }} avis</span>
+                </div>
+
+                <ul class="product-card__characteristics">
+                  @for (characteristic of product.cardCharacteristics; track characteristic) {
+                    <li>{{ characteristic }}</li>
+                  }
+                </ul>
+              </div>
+            </a>
+          }
+        </section>
+      } @else {
+        <section class="products-empty" aria-live="polite">
+          <h2>Aucun produit trouve</h2>
+          <p>Modifiez les filtres pour afficher d'autres produits.</p>
+        </section>
+      }
+    </section>
+  </div>
+</main>

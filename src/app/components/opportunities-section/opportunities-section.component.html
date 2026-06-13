@@ -1,0 +1,95 @@
+<section id="opportunities" class="listings-showcase" aria-labelledby="listings-title">
+  <h2 id="listings-title" class="visually-hidden">Annonces marketplace</h2>
+
+  <div class="listings-showcase__inner">
+    <aside class="filter-panel" aria-label="Filtrer votre recherche">
+      <div class="filter-panel__header">
+        <span class="filter-panel__funnel" aria-hidden="true"></span>
+        <h3>Filtrer Votre Recherche</h3>
+      </div>
+
+      <form class="filter-panel__form">
+        <label>
+          <span class="visually-hidden">Titre</span>
+          <input type="search" placeholder="Titre" />
+        </label>
+
+        <label>
+          <span class="visually-hidden">Taxonomie d'annonce</span>
+          <select>
+            @for (taxonomy of taxonomies; track taxonomy) {
+              <option>{{ taxonomy }}</option>
+            }
+          </select>
+        </label>
+      </form>
+    </aside>
+
+    <div class="listing-carousel" aria-label="Annonces à découvrir">
+      <button
+        class="carousel-button carousel-button--prev"
+        type="button"
+        aria-label="Annonce précédente"
+      >
+        ‹
+      </button>
+
+      <div class="listing-grid">
+        @for (listing of listings; track listing.title) {
+          <article class="listing-card">
+            <div
+              class="listing-card__visual"
+              [class]="'listing-card__visual listing-card__visual--' + listing.visual"
+            >
+              <span class="listing-card__badge">⭐ {{ listing.badge }}</span>
+
+              @if (listing.visual === 'nike') {
+                <span class="listing-card__brand" aria-hidden="true">NIKE</span>
+              }
+
+              @if (listing.visual === 'announcement') {
+                <span class="megaphone" aria-hidden="true">
+                  <span></span>
+                </span>
+              }
+            </div>
+
+            <div class="listing-card__body">
+              <h3>
+                {{ listing.price }}
+                @if (listing.priceNote) {
+                  <small>{{ listing.priceNote }}</small>
+                }
+              </h3>
+              <p>{{ listing.title }}</p>
+
+              @if (listing.meta?.length) {
+                <div class="listing-card__meta" aria-label="Détails de l'annonce">
+                  @for (item of listing.meta; track item) {
+                    <span>{{ item }}</span>
+                  }
+                </div>
+              }
+
+              <div class="listing-card__publisher">
+                <span>Publié par</span>
+                <strong>
+                  <span class="publisher-avatar" aria-hidden="true"></span>
+                  {{ listing.author }}
+                </strong>
+              </div>
+            </div>
+          </article>
+        }
+      </div>
+
+      <button
+        class="carousel-button carousel-button--next"
+        type="button"
+        aria-label="Annonce suivante"
+      >
+        ›
+      </button>
+    </div>
+  </div>
+</section>

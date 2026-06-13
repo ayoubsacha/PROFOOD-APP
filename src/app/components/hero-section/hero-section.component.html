@@ -1,0 +1,42 @@
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero__shade"></div>
+
+  <div class="hero__inner">
+    <a class="hero-logo" href="#top" aria-label="Profood accueil">
+      <img src="/assets/profood-logo.png" alt="Profood" />
+    </a>
+
+    <form class="search-panel" aria-label="Recherche marketplace" (submit)="handleSearch($event)">
+      <label class="search-panel__select">
+        <span class="visually-hidden">Catégorie</span>
+        <select name="category" aria-label="Catégorie">
+          @for (category of categories; track category) {
+            <option [value]="category">{{ category }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="search-panel__input">
+        <span class="visually-hidden">Recherche</span>
+        <input name="query" type="search" placeholder="Que cherchez-vous ?" />
+      </label>
+
+      <button type="submit" aria-label="Rechercher">
+        <span aria-hidden="true">⌕</span>
+      </button>
+    </form>
+
+    <div class="hero__content">
+      <h1 id="hero-title">Investissez dans le futur, aujourd’hui.</h1>
+      <p>
+        PlaceToInvest réunit les opportunités Profood: équipements, livraison, produits
+        alimentaires, acteurs professionnels, événements et maintenance, avec une expérience
+        pensée pour les achats et services B2B.
+      </p>
+    </div>
+
+    <app-category-grid />
+
+    <span class="visually-hidden" aria-live="polite">{{ searchSummary() }}</span>
+  </div>
+</section>

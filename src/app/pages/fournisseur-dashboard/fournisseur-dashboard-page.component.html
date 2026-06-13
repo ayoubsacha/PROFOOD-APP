@@ -1,0 +1,397 @@
+<main class="supplier-dashboard">
+  <aside class="dashboard-sidebar">
+    <a class="brand" href="#top" aria-label="PlaceToInvest">
+      <img src="/assets/profood-logo.png" alt="Profood" />
+    </a>
+
+    <span class="nav-label">Home</span>
+    @if (user(); as user) {
+      <section class="supplier-card">
+        <span class="avatar" aria-hidden="true"></span>
+        <strong>{{ user.companyName || user.name }}</strong>
+        <small>{{ user.email }}</small>
+      </section>
+    }
+
+    <span class="nav-label">Apps</span>
+    <nav class="dashboard-nav" aria-label="Navigation fournisseur">
+      @for (tab of tabs; track tab.id) {
+        <button
+          type="button"
+          [class.is-active]="activeTab() === tab.id"
+          (click)="setTab(tab.id)"
+        >
+          {{ tab.label }}
+        </button>
+      }
+    </nav>
+
+    <button type="button" class="logout-button" (click)="logout()">Se deconnecter</button>
+  </aside>
+
+  <section class="dashboard-main">
+    <header class="dashboard-topbar">
+      <div class="topbar-left">
+        <button type="button" aria-label="Menu">=</button>
+        <label class="topbar-search">
+          <span class="sr-only">Recherche</span>
+          <input type="search" placeholder="Search" />
+        </label>
+        <a href="#stock">Apps</a>
+        <a href="#orders">Orders</a>
+        <a href="#account">Account</a>
+      </div>
+
+      <div class="topbar-right">
+        <span>FR</span>
+        <button type="button" aria-label="Panier">0</button>
+        <button type="button" aria-label="Notifications">!</button>
+        <span class="topbar-avatar" aria-hidden="true"></span>
+      </div>
+    </header>
+
+    <header class="dashboard-header">
+      <div>
+        <span>Fournisseur</span>
+        <h1>Tableau de bord</h1>
+        <p>Stock, commandes, ventes et compte fournisseur.</p>
+      </div>
+
+      <button type="button" (click)="loadDashboard()">Actualiser</button>
+    </header>
+
+    @if (notice()) {
+      <p class="alert alert--success">{{ notice() }}</p>
+    }
+
+    @if (error()) {
+      <p class="alert alert--error">{{ error() }}</p>
+    }
+
+    @if (activeTab() === 'overview') {
+      <section class="summary-grid" aria-label="Indicateurs fournisseur">
+        <article class="summary-card summary-card--profile">
+          <i aria-hidden="true">P</i>
+          <span>Produits actifs</span>
+          <strong>{{ activeProducts() }}</strong>
+          <small>{{ products().length }} produits associes</small>
+        </article>
+        <article class="summary-card summary-card--blog">
+          <i aria-hidden="true">S</i>
+          <span>Stock faible</span>
+          <strong>{{ lowStockProducts().length }}</strong>
+          <small>Seuil 10 unites</small>
+        </article>
+        <article class="summary-card summary-card--calendar">
+          <i aria-hidden="true">C</i>
+          <span>Commandes a traiter</span>
+          <strong>{{ pendingOrders() }}</strong>
+          <small>Approbation ou refus</small>
+        </article>
+        <article class="summary-card summary-card--earnings">
+          <i aria-hidden="true">R</i>
+          <span>Revenu ventes</span>
+          <strong>{{ money(paidRevenue()) }} MAD</strong>
+          <small>{{ money(totalRevenue()) }} MAD total</small>
+        </article>
+      </section>
+
+      <section class="chart-grid">
+        <article class="chart-panel">
+          <h2>Commandes par statut</h2>
+          @if (orderStatusChart().length) {
+            @for (point of orderStatusChart(); track point.label) {
+              <div class="bar-row">
+                <span>{{ statusLabel(point.label) }}</span>
+                <div><i [style.width.%]="point.percent"></i></div>
+                <strong>{{ point.value }}</strong>
+              </div>
+            }
+          } @else {
+            <p class="empty-text">Aucune commande pour le moment.</p>
+          }
+        </article>
+
+        <article class="chart-panel">
+          <h2>Revenu par mois</h2>
+          @if (monthlyRevenueChart().length) {
+            @for (point of monthlyRevenueChart(); track point.label) {
+              <div class="bar-row">
+                <span>{{ point.label }}</span>
+                <div><i [style.width.%]="point.percent"></i></div>
+                <strong>{{ money(point.value) }}</strong>
+              </div>
+            }
+          } @else {
+            <p class="empty-text">Aucun revenu enregistre.</p>
+          }
+        </article>
+
+        <article class="chart-panel chart-panel--wide">
+          <h2>Stock par produit</h2>
+          @if (stockChart().length) {
+            @for (point of stockChart(); track point.label) {
+              <div class="bar-row">
+                <span>{{ point.label }}</span>
+                <div><i [style.width.%]="point.percent"></i></div>
+                <strong>{{ point.value }}</strong>
+              </div>
+            }
+          } @else {
+            <p class="empty-text">Ajoutez un produit pour suivre le stock.</p>
+          }
+        </article>
+      </section>
+    }
+
+    @if (activeTab() === 'stock') {
+      <section class="work-surface">
+        <article class="form-panel">
+          <h2>Ajouter un produit</h2>
+          <form (ngSubmit)="createProduct()">
+            <div class="form-grid">
+              <label>
+                <span>Nom</span>
+                <input name="name" required [(ngModel)]="productForm.name" />
+              </label>
+              <label>
+                <span>Prix MAD</span>
+                <input
+                  type="number"
+                  min="0"
+                  name="price"
+                  required
+                  [(ngModel)]="productForm.price"
+                />
+              </label>
+              <label>
+                <span>Categorie</span>
+                <input name="category" required [(ngModel)]="productForm.category" />
+              </label>
+              <label>
+                <span>Type</span>
+                <input name="type" [(ngModel)]="productForm.type" />
+              </label>
+              <label>
+                <span>Stock initial</span>
+                <input
+                  type="number"
+                  min="0"
+                  name="stockQuantity"
+                  required
+                  [(ngModel)]="productForm.stockQuantity"
+                />
+              </label>
+              <label>
+                <span>Unite</span>
+                <input name="unit" [(ngModel)]="productForm.characteristics!['unit']" />
+              </label>
+            </div>
+            <label>
+              <span>Photo du produit</span>
+              <input type="file" accept="image/*" (change)="importProductImage($event)" />
+            </label>
+            @if (imagePreview()) {
+              <figure class="image-preview">
+                <img [src]="imagePreview()" alt="Apercu du produit importe" />
+                <figcaption>Image importee</figcaption>
+              </figure>
+            }
+            <label>
+              <span>Description</span>
+              <textarea
+                rows="3"
+                name="description"
+                [(ngModel)]="productForm.characteristics!['description']"
+              ></textarea>
+            </label>
+            <button type="submit">Ajouter au stock</button>
+          </form>
+        </article>
+
+        <article class="table-panel">
+          <header>
+            <h2>Mes produits</h2>
+            <span>{{ products().length }} produits</span>
+          </header>
+
+          @if (products().length) {
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Produit</th>
+                    <th>Categorie</th>
+                    <th>Prix</th>
+                    <th>Stock</th>
+                    <th>Statut</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (product of products(); track product._id) {
+                    <tr>
+                      <td>
+                        <strong>{{ product.name }}</strong>
+                        <small>{{ product.type || 'Standard' }}</small>
+                      </td>
+                      <td>{{ product.category }}</td>
+                      <td>{{ money(product.price) }} MAD</td>
+                      <td>
+                        <input
+                          class="stock-input"
+                          type="number"
+                          min="0"
+                          [value]="product.stockQuantity"
+                          #stockValue
+                        />
+                      </td>
+                      <td>
+                        <span class="status-pill" [class]="'status-pill status-pill--' + product.status">
+                          {{ statusLabel(product.status) }}
+                        </span>
+                      </td>
+                      <td>
+                        <div class="row-actions">
+                          <button type="button" (click)="updateStock(product, stockValue.value)">
+                            Sauver
+                          </button>
+                          <button type="button" class="ghost" (click)="disableProduct(product)">
+                            Desactiver
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <p class="empty-text">Aucun produit associe a ce fournisseur.</p>
+          }
+        </article>
+      </section>
+    }
+
+    @if (activeTab() === 'orders') {
+      <section class="orders-list">
+        @if (orders().length) {
+          @for (order of orders(); track order._id) {
+            <article class="order-card">
+              <header>
+                <div>
+                  <strong>Commande {{ order._id.slice(-6).toUpperCase() }}</strong>
+                  <span>{{ dateText(order.createdAt) }}</span>
+                </div>
+                <div class="order-statuses">
+                  <span class="status-pill" [class]="'status-pill status-pill--' + order.orderStatus">
+                    {{ statusLabel(order.orderStatus) }}
+                  </span>
+                  <span class="status-pill" [class]="'status-pill status-pill--' + order.paymentStatus">
+                    {{ statusLabel(order.paymentStatus) }}
+                  </span>
+                </div>
+              </header>
+
+              <ul>
+                @for (item of order.items; track item.productId) {
+                  <li>
+                    <span>{{ item.productName }}</span>
+                    <strong>{{ item.quantity }} x {{ money(item.unitPrice) }} MAD</strong>
+                  </li>
+                }
+              </ul>
+
+              <footer>
+                <strong>{{ money(orderSupplierTotal(order)) }} MAD</strong>
+                <div class="row-actions">
+                  <button
+                    type="button"
+                    [disabled]="order.orderStatus !== 'PENDING'"
+                    (click)="updateOrder(order, 'CONFIRMED')"
+                  >
+                    Approuver
+                  </button>
+                  <button
+                    type="button"
+                    class="danger"
+                    [disabled]="order.orderStatus !== 'PENDING'"
+                    (click)="updateOrder(order, 'CANCELLED')"
+                  >
+                    Refuser
+                  </button>
+                  <button
+                    type="button"
+                    class="ghost"
+                    [disabled]="order.orderStatus === 'CANCELLED' || order.orderStatus === 'DELIVERED'"
+                    (click)="updateOrder(order, 'DELIVERED')"
+                  >
+                    Livree
+                  </button>
+                </div>
+              </footer>
+            </article>
+          }
+        } @else {
+          <section class="empty-panel">
+            <h2>Aucune commande fournisseur</h2>
+            <p>Les commandes contenant vos produits apparaitront ici.</p>
+          </section>
+        }
+      </section>
+    }
+
+    @if (activeTab() === 'account') {
+      <section class="account-grid">
+        <article class="form-panel">
+          <h2>Informations du compte</h2>
+          <form (ngSubmit)="saveProfile()">
+            <label>
+              <span>Nom</span>
+              <input name="profileName" required [(ngModel)]="profileForm.name" />
+            </label>
+            <label>
+              <span>Entreprise</span>
+              <input name="profileCompany" [(ngModel)]="profileForm.companyName" />
+            </label>
+            <label>
+              <span>Telephone</span>
+              <input name="profilePhone" [(ngModel)]="profileForm.phone" />
+            </label>
+            <label>
+              <span>Adresse</span>
+              <input name="profileAddress" [(ngModel)]="profileForm.address" />
+            </label>
+            <button type="submit">Mettre a jour</button>
+          </form>
+        </article>
+
+        <article class="form-panel">
+          <h2>Mot de passe</h2>
+          <form (ngSubmit)="changePassword()">
+            <label>
+              <span>Mot de passe actuel</span>
+              <input
+                type="password"
+                name="currentPassword"
+                required
+                [(ngModel)]="passwordForm.currentPassword"
+              />
+            </label>
+            <label>
+              <span>Nouveau mot de passe</span>
+              <input
+                type="password"
+                name="newPassword"
+                required
+                minlength="8"
+                [(ngModel)]="passwordForm.newPassword"
+              />
+            </label>
+            <button type="submit">Changer le mot de passe</button>
+          </form>
+        </article>
+      </section>
+    }
+  </section>
+</main>

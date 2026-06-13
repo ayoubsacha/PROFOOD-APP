@@ -1,0 +1,12 @@
+<article class="opportunity-card">
+  <div class="opportunity-card__image" [style.--card-accent]="opportunity.accent">
+    <span>{{ opportunity.badge }}</span>
+  </div>
+
+  <div class="opportunity-card__body">
+    <span class="opportunity-card__category">{{ opportunity.category }}</span>
+    <h3>{{ opportunity.title }}</h3>
+    <p>{{ opportunity.description }}</p>
+    <a href="#top">Voir détails</a>
+  </div>
+</article>

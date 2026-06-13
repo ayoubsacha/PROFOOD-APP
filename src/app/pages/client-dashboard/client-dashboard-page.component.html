@@ -1,0 +1,398 @@
+<main class="client-dashboard">
+  <aside class="dashboard-sidebar">
+    <a class="brand" routerLink="/client/dashboard" aria-label="Profood">
+      <img src="/assets/profood-logo.png" alt="Profood" />
+    </a>
+
+    <span class="nav-label">Home</span>
+    @if (user(); as user) {
+      <section class="client-card">
+        <span class="avatar" aria-hidden="true"></span>
+        <strong>{{ user.companyName || user.name }}</strong>
+        <small>{{ user.email }}</small>
+      </section>
+    }
+
+    <span class="nav-label">Apps</span>
+    <nav class="dashboard-nav" aria-label="Navigation client">
+      @for (tab of tabs; track tab.id) {
+        <button
+          type="button"
+          [class.is-active]="activeTab() === tab.id"
+          (click)="setTab(tab.id)"
+        >
+          {{ tab.label }}
+        </button>
+      }
+    </nav>
+
+    <a class="market-link" routerLink="/home">Marketplace</a>
+    <button type="button" class="logout-button" (click)="logout()">Se deconnecter</button>
+  </aside>
+
+  <section class="dashboard-main">
+    <header class="dashboard-topbar">
+      <div class="topbar-left">
+        <button type="button" aria-label="Menu">=</button>
+        <label class="topbar-search">
+          <span class="sr-only">Recherche</span>
+          <input type="search" placeholder="Search" />
+        </label>
+        <a routerLink="/home">Apps</a>
+        <a routerLink="/products">Produits</a>
+        <button type="button" (click)="setTab('cart')">Panier</button>
+      </div>
+
+      <div class="topbar-right">
+        <span>FR</span>
+        <button type="button" aria-label="Panier" (click)="setTab('cart')">
+          {{ cartCount() }}
+        </button>
+        <button type="button" aria-label="Notifications">{{ pendingOrders() }}</button>
+        <span class="topbar-avatar" aria-hidden="true"></span>
+      </div>
+    </header>
+
+    <header class="dashboard-header">
+      <div>
+        <span>Client professionnel</span>
+        <h1>Espace client</h1>
+        <p>Profil, panier, commandes et achats professionnels.</p>
+      </div>
+
+      <div class="header-actions">
+        <a routerLink="/products">Voir les produits</a>
+        <button type="button" (click)="loadDashboard()">Actualiser</button>
+      </div>
+    </header>
+
+    @if (notice()) {
+      <p class="alert alert--success">{{ notice() }}</p>
+    }
+
+    @if (error()) {
+      <p class="alert alert--error">{{ error() }}</p>
+    }
+
+    @if (activeTab() === 'overview') {
+      <section class="summary-grid" aria-label="Indicateurs client">
+        <article class="summary-card summary-card--cart">
+          <i aria-hidden="true">P</i>
+          <span>Produits au panier</span>
+          <strong>{{ cartCount() }}</strong>
+          <small>{{ money(cartTotal()) }} MAD en cours</small>
+        </article>
+        <article class="summary-card summary-card--orders">
+          <i aria-hidden="true">C</i>
+          <span>Commandes actives</span>
+          <strong>{{ activeOrders() }}</strong>
+          <small>{{ pendingOrders() }} en attente</small>
+        </article>
+        <article class="summary-card summary-card--paid">
+          <i aria-hidden="true">A</i>
+          <span>Total achats</span>
+          <strong>{{ money(paidTotal()) }} MAD</strong>
+          <small>Paiements valides</small>
+        </article>
+        <article class="summary-card summary-card--profile">
+          <i aria-hidden="true">B</i>
+          <span>Compte</span>
+          <strong>{{ user()?.status || 'ACTIVE' }}</strong>
+          <small>{{ user()?.role || 'CLIENT_PRO' }}</small>
+        </article>
+      </section>
+
+      <section class="quick-actions">
+        <a routerLink="/home">
+          <strong>Acceder a la landing client</strong>
+          <span>Retrouver l'accueil Profood et les familles de produits.</span>
+        </a>
+        <a routerLink="/products">
+          <strong>Continuer les achats</strong>
+          <span>Explorer le catalogue et ajouter des produits au panier.</span>
+        </a>
+        <button type="button" (click)="setTab('cart')">
+          <strong>Gerer le panier</strong>
+          <span>Modifier les quantites et valider une commande.</span>
+        </button>
+      </section>
+
+      <section class="chart-grid">
+        <article class="chart-panel">
+          <h2>Commandes par statut</h2>
+          @if (orderStatusChart().length) {
+            @for (point of orderStatusChart(); track point.label) {
+              <div class="bar-row">
+                <span>{{ statusLabel(point.label) }}</span>
+                <div><i [style.width.%]="point.percent"></i></div>
+                <strong>{{ point.value }}</strong>
+              </div>
+            }
+          } @else {
+            <p class="empty-text">Aucune commande pour le moment.</p>
+          }
+        </article>
+
+        <article class="chart-panel">
+          <h2>Achats par mois</h2>
+          @if (monthlySpendChart().length) {
+            @for (point of monthlySpendChart(); track point.label) {
+              <div class="bar-row">
+                <span>{{ point.label }}</span>
+                <div><i [style.width.%]="point.percent"></i></div>
+                <strong>{{ money(point.value) }}</strong>
+              </div>
+            }
+          } @else {
+            <p class="empty-text">Vos achats valides apparaitront ici.</p>
+          }
+        </article>
+      </section>
+    }
+
+    @if (activeTab() === 'cart') {
+      <section class="cart-grid">
+        <article class="cart-panel">
+          <header>
+            <div>
+              <h2>Gestion de panier</h2>
+              <p>{{ cartItems().length }} lignes, {{ cartCount() }} unites</p>
+            </div>
+            <button type="button" class="ghost" [disabled]="!cartItems().length" (click)="clearCart()">
+              Vider
+            </button>
+          </header>
+
+          @if (cartItems().length) {
+            <div class="cart-list">
+              @for (item of cartItems(); track productId(item)) {
+                <article class="cart-item">
+                  <img [src]="productImage(item)" [alt]="productName(item)" />
+                  <div class="cart-item__info">
+                    <strong>{{ productName(item) }}</strong>
+                    <span>{{ productSupplier(item) }}</span>
+                    <small>{{ productStock(item) }}</small>
+                    @if (productSlug(item); as slug) {
+                      <a [routerLink]="['/products', slug]">Voir le produit</a>
+                    }
+                  </div>
+                  <label>
+                    <span>Quantite</span>
+                    <input type="number" min="1" [value]="item.quantity" #quantityInput />
+                  </label>
+                  <div class="cart-item__price">
+                    <span>{{ money(item.unitPrice) }} MAD</span>
+                    <strong>{{ money(itemTotal(item)) }} MAD</strong>
+                  </div>
+                  <div class="row-actions">
+                    <button type="button" (click)="updateCartQuantity(item, quantityInput.value)">
+                      Sauver
+                    </button>
+                    <button type="button" class="ghost" (click)="removeCartItem(item)">
+                      Retirer
+                    </button>
+                  </div>
+                </article>
+              }
+            </div>
+          } @else {
+            <section class="empty-panel">
+              <h2>Panier vide</h2>
+              <p>Ajoutez des produits depuis le catalogue pour preparer une commande.</p>
+              <a routerLink="/products">Voir les produits</a>
+            </section>
+          }
+        </article>
+
+        <aside class="checkout-panel">
+          <h2>Validation</h2>
+          <dl>
+            <div>
+              <dt>Articles</dt>
+              <dd>{{ cartCount() }}</dd>
+            </div>
+            <div>
+              <dt>Total</dt>
+              <dd>{{ money(cartTotal()) }} MAD</dd>
+            </div>
+          </dl>
+
+          <form class="checkout-form" (ngSubmit)="validateCart()">
+            <label>
+              <span>Nom du contact</span>
+              <input name="checkoutContact" required [(ngModel)]="checkoutForm.contactName" />
+            </label>
+            <label>
+              <span>Entreprise</span>
+              <input name="checkoutCompany" [(ngModel)]="checkoutForm.companyName" />
+            </label>
+            <label>
+              <span>Email</span>
+              <input type="email" name="checkoutEmail" [(ngModel)]="checkoutForm.email" />
+            </label>
+            <label>
+              <span>Telephone</span>
+              <input name="checkoutPhone" required [(ngModel)]="checkoutForm.phone" />
+            </label>
+            <label>
+              <span>Adresse de livraison</span>
+              <input name="checkoutAddress" required [(ngModel)]="checkoutForm.address" />
+            </label>
+            <label>
+              <span>Ville</span>
+              <input name="checkoutCity" [(ngModel)]="checkoutForm.city" />
+            </label>
+            <label>
+              <span>Notes commande</span>
+              <textarea rows="3" name="checkoutNotes" [(ngModel)]="checkoutForm.notes"></textarea>
+            </label>
+            <label>
+              <span>Mode de paiement</span>
+              <select name="paymentMethod" [(ngModel)]="paymentForm.method">
+                <option value="Paiement securise Profood">Paiement securise Profood</option>
+                <option value="Virement bancaire">Virement bancaire</option>
+                <option value="Paiement a la livraison">Paiement a la livraison</option>
+              </select>
+            </label>
+
+            <button type="submit" [disabled]="!cartItems().length">
+              Payer et valider la commande
+            </button>
+          </form>
+
+          <p class="checkout-note">
+            Les fournisseurs verront la commande apres validation et pourront l'approuver ou la refuser.
+          </p>
+        </aside>
+      </section>
+    }
+
+    @if (activeTab() === 'orders') {
+      <section class="orders-list">
+        @if (orders().length) {
+          @for (order of orders(); track order._id) {
+            <article class="order-card">
+              <header>
+                <div>
+                  <strong>Commande {{ order._id.slice(-6).toUpperCase() }}</strong>
+                  <span>{{ dateText(order.createdAt) }}</span>
+                </div>
+                <div class="order-statuses">
+                  <span class="status-pill" [class]="'status-pill status-pill--' + order.orderStatus">
+                    {{ statusLabel(order.orderStatus) }}
+                  </span>
+                  <span class="status-pill" [class]="'status-pill status-pill--' + order.paymentStatus">
+                    {{ statusLabel(order.paymentStatus) }}
+                  </span>
+                </div>
+              </header>
+
+              <ul>
+                @for (item of order.items; track item.productId) {
+                  <li>
+                    <span>{{ item.productName }}</span>
+                    <strong>{{ item.quantity }} x {{ money(item.unitPrice) }} MAD</strong>
+                  </li>
+                }
+              </ul>
+
+              <section class="tracking-panel" aria-label="Suivi commande">
+                @if (order.orderStatus === 'CANCELLED') {
+                  <span class="tracking-step tracking-step--cancelled">Refusee par le fournisseur</span>
+                } @else {
+                  @for (step of trackingSteps; track step.status) {
+                    <span
+                      class="tracking-step"
+                      [class.tracking-step--active]="isTrackingStepReached(order, step.status)"
+                    >
+                      {{ step.label }}
+                    </span>
+                  }
+                }
+              </section>
+
+              @if (order.checkoutInfo; as info) {
+                <section class="delivery-panel">
+                  <strong>Informations de livraison</strong>
+                  <span>{{ info.contactName }} - {{ info.phone }}</span>
+                  <span>{{ info.address }} {{ info.city }}</span>
+                </section>
+              }
+
+              <footer>
+                <span>Suivi fournisseur</span>
+                <strong>{{ money(order.totalAmount) }} MAD</strong>
+              </footer>
+            </article>
+          }
+        } @else {
+          <section class="empty-panel">
+            <h2>Aucune commande</h2>
+            <p>Une commande apparaitra ici apres validation du panier.</p>
+            <a routerLink="/products">Commencer les achats</a>
+          </section>
+        }
+      </section>
+    }
+
+    @if (activeTab() === 'account') {
+      <section class="account-grid">
+        <article class="form-panel">
+          <h2>Gestion du profil</h2>
+          <form (ngSubmit)="saveProfile()">
+            <label>
+              <span>Nom</span>
+              <input name="profileName" required [(ngModel)]="profileForm.name" />
+            </label>
+            <label>
+              <span>Entreprise</span>
+              <input name="profileCompany" [(ngModel)]="profileForm.companyName" />
+            </label>
+            <label>
+              <span>Telephone</span>
+              <input name="profilePhone" [(ngModel)]="profileForm.phone" />
+            </label>
+            <label>
+              <span>Adresse</span>
+              <input name="profileAddress" [(ngModel)]="profileForm.address" />
+            </label>
+            <button type="submit">Mettre a jour</button>
+          </form>
+        </article>
+
+        <article class="form-panel">
+          <h2>Securite</h2>
+          <form (ngSubmit)="changePassword()">
+            <label>
+              <span>Mot de passe actuel</span>
+              <input
+                type="password"
+                name="currentPassword"
+                required
+                [(ngModel)]="passwordForm.currentPassword"
+              />
+            </label>
+            <label>
+              <span>Nouveau mot de passe</span>
+              <input
+                type="password"
+                name="newPassword"
+                required
+                minlength="8"
+                [(ngModel)]="passwordForm.newPassword"
+              />
+            </label>
+            <button type="submit">Changer le mot de passe</button>
+          </form>
+        </article>
+
+        <article class="profile-panel">
+          <h2>Session</h2>
+          <p>{{ user()?.email }}</p>
+          <p>{{ user()?.companyName || user()?.name }}</p>
+          <button type="button" class="danger" (click)="logout()">Se deconnecter</button>
+        </article>
+      </section>
+    }
+  </section>
+</main>

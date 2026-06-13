@@ -1,0 +1,30 @@
+<main id="top" class="home-page">
+  <section class="client-homebar" aria-label="Espace client rapide">
+    <div>
+      <span>Client Pro</span>
+      <strong>{{ user()?.companyName || user()?.name || 'Compte client' }}</strong>
+    </div>
+
+    <nav aria-label="Actions client">
+      <a routerLink="/client/dashboard" [queryParams]="{ tab: 'account' }">
+        <span class="profile-icon" aria-hidden="true"></span>
+        Modifier profil
+      </a>
+      <a class="cart-action" routerLink="/client/dashboard" [queryParams]="{ tab: 'cart' }">
+        <span class="cart-icon" aria-hidden="true"></span>
+        Gestion panier
+        <strong>{{ cartCount() }}</strong>
+      </a>
+      <a routerLink="/client/dashboard" [queryParams]="{ tab: 'orders' }">
+        <span class="track-icon" aria-hidden="true"></span>
+        Suivi commandes
+      </a>
+      <button type="button" (click)="logout()">Se deconnecter</button>
+    </nav>
+  </section>
+
+  <app-hero-section />
+  <app-marketplace-menu />
+  <app-opportunities-section />
+  <app-bottom-showcases />
+</main>

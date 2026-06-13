@@ -1,0 +1,29 @@
+<main class="dashboard-page">
+  <section class="dashboard-panel">
+    <header>
+      <span>PROFOOD Marketplace</span>
+      <h1>{{ title() }}</h1>
+      <p>{{ subtitle() }}</p>
+    </header>
+
+    @if (user(); as user) {
+      <section class="profile-strip">
+        <strong>{{ user.name }}</strong>
+        <span>{{ user.role }}</span>
+        <span>{{ user.email }}</span>
+      </section>
+    }
+
+    <nav class="dashboard-actions" aria-label="Actions principales">
+      @if (dashboardType() === 'admin') {
+        <a routerLink="/products">Voir le catalogue</a>
+        <a routerLink="/account-request">Nouvelle demande</a>
+      } @else {
+        <a routerLink="/products">Voir mes produits</a>
+        <a routerLink="/products">Stock et catalogue</a>
+      }
+    </nav>
+
+    <button type="button" (click)="logout()">Se deconnecter</button>
+  </section>
+</main>
