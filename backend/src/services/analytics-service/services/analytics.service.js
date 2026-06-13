@@ -15,21 +15,30 @@ async function countBy(model, field, match = {}) {
 async function getDashboardAnalytics() {
   const [
     totalUsers,
+    totalClients,
+    totalFournisseurs,
     usersByRole,
     pendingAccountRequests,
     requestsByStatus,
+    pendingRequests,
     totalProducts,
     productsByCategory,
     totalOrders,
     ordersByStatus,
     revenueTotals,
+    revenueByMonth,
     topProducts,
     lowStockProducts,
+    recentOrders,
+    recentUsers,
   ] = await Promise.all([
     User.countDocuments(),
+    User.countDocuments({ role: 'CLIENT_PRO' }),
+    User.countDocuments({ role: 'FOURNISSEUR' }),
     countBy(User, 'role'),
     AccountRequest.countDocuments({ status: 'PENDING' }),
     countBy(AccountRequest, 'status'),
+    AccountRequest.find({ status: 'PENDING' }).sort({ createdAt: -1 }).limit(8),
     Product.countDocuments(),
     countBy(Product, 'category'),
     Order.countDocuments(),
@@ -50,6 +59,32 @@ async function getDashboardAnalytics() {
       { $project: { _id: 0, revenue: 1, averageOrderValue: 1, paidOrders: 1 } },
     ]),
     Order.aggregate([
+      {
+        $group: {
+          _id: {
+            year: { $year: '$createdAt' },
+            month: { $month: '$createdAt' },
+          },
+          value: { $sum: '$totalAmount' },
+        },
+      },
+      { $sort: { '_id.year': 1, '_id.month': 1 } },
+      { $limit: 12 },
+      {
+        $project: {
+          _id: 0,
+          label: {
+            $concat: [
+              { $toString: '$_id.month' },
+              '/',
+              { $toString: '$_id.year' },
+            ],
+          },
+          value: 1,
+        },
+      },
+    ]),
+    Order.aggregate([
       { $unwind: '$items' },
       {
         $group: {
@@ -67,20 +102,29 @@ async function getDashboardAnalytics() {
       .select('name category stockQuantity fournisseurName status')
       .sort({ stockQuantity: 1 })
       .limit(20),
+    Order.find().sort({ createdAt: -1 }).limit(10),
+    User.find().sort({ createdAt: -1 }).limit(10),
   ]);
 
   return {
     totalUsers,
+    totalClients,
+    totalFournisseurs,
     usersByRole,
     pendingAccountRequests,
     requestsByStatus,
+    pendingRequests,
     totalProducts,
     productsByCategory,
     totalOrders,
     ordersByStatus,
     revenue: revenueTotals[0] || { revenue: 0, averageOrderValue: 0, paidOrders: 0 },
+    revenueByMonth,
     topProducts,
     lowStockProducts,
+    lowStockCount: lowStockProducts.length,
+    recentOrders,
+    recentUsers,
   };
 }
 

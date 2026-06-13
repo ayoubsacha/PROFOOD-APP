@@ -1,0 +1,87 @@
+.stat-card {
+  min-height: 138px;
+  padding: 1rem;
+  border: 1px solid #e6ebf2;
+  border-radius: 8px;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 0.25rem;
+  color: #171b22;
+  background: #ffffff;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.05);
+}
+
+.stat-card__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+  background: #171b22;
+  font-weight: 950;
+}
+
+.stat-card span:not(.stat-card__icon) {
+  color: #768394;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.stat-card strong {
+  font-size: 1.45rem;
+  line-height: 1.1;
+}
+
+.stat-card small {
+  color: #768394;
+}
+
+.stat-card--green {
+  background: #ecfdf3;
+}
+
+.stat-card--green .stat-card__icon {
+  background: #248a3d;
+}
+
+.stat-card--blue {
+  background: #eef6ff;
+}
+
+.stat-card--blue .stat-card__icon {
+  background: #1d6fd8;
+}
+
+.stat-card--amber {
+  background: #fff8e6;
+}
+
+.stat-card--amber .stat-card__icon {
+  background: #c27b00;
+}
+
+.stat-card--red {
+  background: #fff0ec;
+}
+
+.stat-card--red .stat-card__icon {
+  background: #c2412d;
+}
+
+.stat-card--dark {
+  color: #ffffff;
+  background: #171b22;
+}
+
+.stat-card--dark span:not(.stat-card__icon),
+.stat-card--dark small {
+  color: #cbd5e1;
+}
+
+.stat-card--dark .stat-card__icon {
+  color: #171b22;
+  background: #58d26f;
+}

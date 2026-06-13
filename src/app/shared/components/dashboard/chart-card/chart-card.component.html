@@ -1,0 +1,22 @@
+<article class="chart-card">
+  <header>
+    <h2>{{ title }}</h2>
+    @if (subtitle) {
+      <span>{{ subtitle }}</span>
+    }
+  </header>
+
+  @if (points.length) {
+    <div class="chart-card__rows">
+      @for (point of normalizedPoints(); track point.label) {
+        <div class="chart-row">
+          <span>{{ point.label }}</span>
+          <div class="chart-row__bar"><i [style.width.%]="point.percent"></i></div>
+          <strong>{{ point.value }}{{ valueSuffix }}</strong>
+        </div>
+      }
+    </div>
+  } @else {
+    <p class="chart-card__empty">{{ emptyText }}</p>
+  }
+</article>

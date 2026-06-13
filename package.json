@@ -7,6 +7,7 @@
     "backend": "node backend/src/server.js",
     "backend:dev": "nodemon backend/src/server.js",
     "seed:admin": "node backend/src/scripts/seedAdmin.js",
+    "seed:catalog": "node backend/src/scripts/seedCatalogProducts.js",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"

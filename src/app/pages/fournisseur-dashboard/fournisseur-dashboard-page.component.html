@@ -94,6 +94,24 @@
           <strong>{{ money(paidRevenue()) }} MAD</strong>
           <small>{{ money(totalRevenue()) }} MAD total</small>
         </article>
+        <article class="summary-card summary-card--profile">
+          <i aria-hidden="true">O</i>
+          <span>Total commandes</span>
+          <strong>{{ totalOrders() }}</strong>
+          <small>{{ pendingOrders() }} en attente</small>
+        </article>
+        <article class="summary-card summary-card--calendar">
+          <i aria-hidden="true">M</i>
+          <span>Revenu mensuel</span>
+          <strong>{{ money(monthlyRevenue()) }} MAD</strong>
+          <small>Mois en cours</small>
+        </article>
+        <article class="summary-card summary-card--blog">
+          <i aria-hidden="true">A</i>
+          <span>Alertes stock</span>
+          <strong>{{ lowStockProducts().length }}</strong>
+          <small>Produits a surveiller</small>
+        </article>
       </section>
 
       <section class="chart-grid">
@@ -141,10 +159,47 @@
             <p class="empty-text">Ajoutez un produit pour suivre le stock.</p>
           }
         </article>
+
+        <article class="chart-panel chart-panel--wide">
+          <h2>Produits les plus vendus</h2>
+          @if (topSellingChart().length) {
+            @for (point of topSellingChart(); track point.label) {
+              <div class="bar-row">
+                <span>{{ point.label }}</span>
+                <div><i [style.width.%]="point.percent"></i></div>
+                <strong>{{ point.value }}</strong>
+              </div>
+            }
+          } @else {
+            <p class="empty-text">Les meilleures ventes apparaitront apres les commandes.</p>
+          }
+        </article>
       </section>
+
+      @if (lowStockProducts().length || pendingOrders()) {
+        <section class="alerts-grid">
+          @if (lowStockProducts().length) {
+            <article class="alert-card">
+              <strong>Stock faible</strong>
+              <span>{{ lowStockProducts().length }} produits sous le seuil de 10 unites.</span>
+            </article>
+          }
+          @if (pendingOrders()) {
+            <article class="alert-card">
+              <strong>Nouvelles commandes</strong>
+              <span>{{ pendingOrders() }} commandes attendent votre decision.</span>
+            </article>
+          }
+        </section>
+      }
     }
 
     @if (activeTab() === 'stock') {
+      <app-filter-bar
+        searchPlaceholder="Chercher dans mes produits"
+        [statusOptions]="productStatusOptions"
+        (filtersChange)="setProductFilters($event)"
+      />
       <section class="work-surface">
         <article class="form-panel">
           <h2>Ajouter un produit</h2>
@@ -212,10 +267,10 @@
         <article class="table-panel">
           <header>
             <h2>Mes produits</h2>
-            <span>{{ products().length }} produits</span>
+            <span>{{ filteredProducts().length }} produits</span>
           </header>
 
-          @if (products().length) {
+          @if (filteredProducts().length) {
             <div class="table-wrap">
               <table>
                 <thead>
@@ -229,7 +284,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  @for (product of products(); track product._id) {
+                  @for (product of filteredProducts(); track product._id) {
                     <tr>
                       <td>
                         <strong>{{ product.name }}</strong>
@@ -274,9 +329,19 @@
     }
 
     @if (activeTab() === 'orders') {
+      <app-filter-bar
+        searchPlaceholder="Chercher une commande"
+        [statusOptions]="orderStatusOptions"
+        [showDate]="true"
+        (filtersChange)="setOrderFilters($event)"
+      />
       <section class="orders-list">
-        @if (orders().length) {
-          @for (order of orders(); track order._id) {
+        <div class="orders-toolbar">
+          <span>{{ filteredOrders().length }} commandes</span>
+          <button type="button" (click)="exportOrdersCsv()">Exporter CSV</button>
+        </div>
+        @if (filteredOrders().length) {
+          @for (order of filteredOrders(); track order._id) {
             <article class="order-card">
               <header>
                 <div>

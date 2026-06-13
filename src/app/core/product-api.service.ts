@@ -17,7 +17,7 @@ export class ProductApiService {
     return this.http.get<ApiResponse<BackendProduct[]>>(`${API_BASE_URL}/products`).pipe(
       map((response) => {
         const products = response.data.map((product) => this.toCatalogItem(product));
-        return products.length ? products : PRODUCT_CATALOG;
+        return this.mergeCatalogProducts(products);
       }),
       catchError(() => of(PRODUCT_CATALOG)),
     );
@@ -67,6 +67,13 @@ export class ProductApiService {
           `${product.name} disponible pour commandes professionnelles.`,
       ),
     };
+  }
+
+  private mergeCatalogProducts(backendProducts: ProductCatalogItem[]): ProductCatalogItem[] {
+    const seenSlugs = new Set(backendProducts.map((product) => product.slug));
+    const staticProducts = PRODUCT_CATALOG.filter((product) => !seenSlugs.has(product.slug));
+
+    return [...backendProducts, ...staticProducts];
   }
 
   private labelize(value: string): string {

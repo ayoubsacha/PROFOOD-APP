@@ -100,6 +100,24 @@
           <strong>{{ user()?.status || 'ACTIVE' }}</strong>
           <small>{{ user()?.role || 'CLIENT_PRO' }}</small>
         </article>
+        <article class="summary-card summary-card--orders">
+          <i aria-hidden="true">L</i>
+          <span>Commandes livrees</span>
+          <strong>{{ deliveredOrders() }}</strong>
+          <small>Historique valide</small>
+        </article>
+        <article class="summary-card summary-card--paid">
+          <i aria-hidden="true">M</i>
+          <span>Depense mensuelle</span>
+          <strong>{{ money(monthlySpending()) }} MAD</strong>
+          <small>Mois en cours</small>
+        </article>
+        <article class="summary-card summary-card--cart">
+          <i aria-hidden="true">F</i>
+          <span>Fournisseurs favoris</span>
+          <strong>{{ favoriteSuppliers().length }}</strong>
+          <small>Selon vos achats</small>
+        </article>
       </section>
 
       <section class="quick-actions">
@@ -145,6 +163,66 @@
             }
           } @else {
             <p class="empty-text">Vos achats valides apparaitront ici.</p>
+          }
+        </article>
+
+        <article class="chart-panel">
+          <h2>Depenses par categorie</h2>
+          @if (spendingByCategoryChart().length) {
+            @for (point of spendingByCategoryChart(); track point.label) {
+              <div class="bar-row">
+                <span>{{ point.label }}</span>
+                <div><i [style.width.%]="point.percent"></i></div>
+                <strong>{{ money(point.value) }}</strong>
+              </div>
+            }
+          } @else {
+            <p class="empty-text">Les categories apparaitront avec le panier.</p>
+          }
+        </article>
+
+        <article class="chart-panel">
+          <h2>Produits frequents</h2>
+          @if (frequentlyPurchasedChart().length) {
+            @for (point of frequentlyPurchasedChart(); track point.label) {
+              <div class="bar-row">
+                <span>{{ point.label }}</span>
+                <div><i [style.width.%]="point.percent"></i></div>
+                <strong>{{ point.value }}</strong>
+              </div>
+            }
+          } @else {
+            <p class="empty-text">Les produits recommandes apparaitront apres vos commandes.</p>
+          }
+        </article>
+      </section>
+
+      <section class="buyer-grid">
+        <article class="buyer-panel">
+          <h2>Fournisseurs favoris</h2>
+          @if (favoriteSuppliers().length) {
+            @for (supplier of favoriteSuppliers(); track supplier.supplierId) {
+              <div class="supplier-row">
+                <strong>{{ supplier.label }}</strong>
+                <span>{{ supplier.quantity }} unites commandees</span>
+              </div>
+            }
+          } @else {
+            <p class="empty-text">Vos fournisseurs favoris seront calcules depuis les commandes.</p>
+          }
+        </article>
+
+        <article class="buyer-panel">
+          <h2>Articles recents du panier</h2>
+          @if (cartItems().length) {
+            @for (item of cartItems().slice(0, 4); track productId(item)) {
+              <div class="supplier-row">
+                <strong>{{ productName(item) }}</strong>
+                <span>{{ item.quantity }} x {{ money(item.unitPrice) }} MAD</span>
+              </div>
+            }
+          } @else {
+            <p class="empty-text">Ajoutez des produits pour voir les articles recents.</p>
           }
         </article>
       </section>
@@ -268,9 +346,15 @@
     }
 
     @if (activeTab() === 'orders') {
+      <app-filter-bar
+        searchPlaceholder="Chercher une commande"
+        [statusOptions]="orderStatusOptions"
+        [showDate]="true"
+        (filtersChange)="setOrderFilters($event)"
+      />
       <section class="orders-list">
-        @if (orders().length) {
-          @for (order of orders(); track order._id) {
+        @if (filteredOrders().length) {
+          @for (order of filteredOrders(); track order._id) {
             <article class="order-card">
               <header>
                 <div>
@@ -322,6 +406,7 @@
               <footer>
                 <span>Suivi fournisseur</span>
                 <strong>{{ money(order.totalAmount) }} MAD</strong>
+                <button type="button" class="ghost" (click)="reorder(order)">Recommander</button>
               </footer>
             </article>
           }

@@ -2,10 +2,12 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/auth.service';
 import { BackendProduct, OrderStatus, SupplierOrder } from '../../core/api.models';
+import { FilterState } from '../../core/dashboard.models';
 import {
   FournisseurDashboardService,
   ProductPayload,
 } from '../../core/fournisseur-dashboard.service';
+import { FilterBarComponent } from '../../shared/components/dashboard/filter-bar/filter-bar.component';
 
 type DashboardTab = 'overview' | 'stock' | 'orders' | 'account';
 
@@ -17,7 +19,7 @@ interface ChartPoint {
 
 @Component({
   selector: 'app-fournisseur-dashboard-page',
-  imports: [FormsModule],
+  imports: [FormsModule, FilterBarComponent],
   templateUrl: './fournisseur-dashboard-page.component.html',
   styleUrl: './fournisseur-dashboard-page.component.scss',
 })
@@ -32,6 +34,16 @@ export class FournisseurDashboardPageComponent implements OnInit {
   protected readonly loading = signal(false);
   protected readonly notice = signal('');
   protected readonly error = signal('');
+  protected readonly productFilters = signal<FilterState>({ search: '', status: '', date: '' });
+  protected readonly orderFilters = signal<FilterState>({ search: '', status: '', date: '' });
+  protected readonly productStatusOptions = ['ACTIVE', 'OUT_OF_STOCK', 'DISABLED'];
+  protected readonly orderStatusOptions: OrderStatus[] = [
+    'PENDING',
+    'CONFIRMED',
+    'PROCESSING',
+    'DELIVERED',
+    'CANCELLED',
+  ];
 
   protected readonly productForm: ProductPayload = {
     name: '',
@@ -90,6 +102,8 @@ export class FournisseurDashboardPageComponent implements OnInit {
     () => this.orders().filter((order) => order.orderStatus === 'PENDING').length,
   );
 
+  protected readonly totalOrders = computed(() => this.orders().length);
+
   protected readonly lowStockProducts = computed(() =>
     this.products().filter((product) => product.stockQuantity <= 10 && product.status !== 'DISABLED'),
   );
@@ -97,6 +111,25 @@ export class FournisseurDashboardPageComponent implements OnInit {
   protected readonly activeProducts = computed(
     () => this.products().filter((product) => product.status === 'ACTIVE').length,
   );
+
+  protected readonly monthlyRevenue = computed(() => {
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+
+    return this.orders().reduce((sum, order) => {
+      const createdAt = new Date(order.createdAt);
+
+      if (
+        order.orderStatus === 'CANCELLED' ||
+        createdAt.getMonth() !== currentMonth ||
+        createdAt.getFullYear() !== currentYear
+      ) {
+        return sum;
+      }
+
+      return sum + this.orderSupplierTotal(order);
+    }, 0);
+  });
 
   protected readonly orderStatusChart = computed(() => {
     const counts = new Map<OrderStatus, number>();
@@ -126,6 +159,58 @@ export class FournisseurDashboardPageComponent implements OnInit {
       .map((product) => ({ label: product.name, value: product.stockQuantity }));
 
     return this.toChartPoints(points);
+  });
+
+  protected readonly topSellingChart = computed(() => {
+    const sales = new Map<string, number>();
+
+    this.orders().forEach((order) => {
+      if (order.orderStatus === 'CANCELLED') {
+        return;
+      }
+
+      order.items.forEach((item) => {
+        sales.set(item.productName, (sales.get(item.productName) || 0) + item.quantity);
+      });
+    });
+
+    return this.toChartPoints(
+      [...sales.entries()]
+        .sort((first, second) => second[1] - first[1])
+        .slice(0, 8)
+        .map(([label, value]) => ({ label, value })),
+    );
+  });
+
+  protected readonly filteredProducts = computed(() => {
+    const search = this.normalize(this.productFilters().search);
+    const status = this.productFilters().status;
+
+    return this.products().filter((product) => {
+      const matchesSearch =
+        !search ||
+        [product.name, product.category, product.type || ''].some((value) =>
+          this.normalize(value).includes(search),
+        );
+      const matchesStatus = !status || product.status === status;
+      return matchesSearch && matchesStatus;
+    });
+  });
+
+  protected readonly filteredOrders = computed(() => {
+    const filters = this.orderFilters();
+    const search = this.normalize(filters.search);
+
+    return this.orders().filter((order) => {
+      const matchesSearch =
+        !search ||
+        [order._id, order.orderStatus, ...order.items.map((item) => item.productName)].some((value) =>
+          this.normalize(value).includes(search),
+        );
+      const matchesStatus = !filters.status || order.orderStatus === filters.status;
+      const matchesDate = !filters.date || order.createdAt.startsWith(filters.date);
+      return matchesSearch && matchesStatus && matchesDate;
+    });
   });
 
   ngOnInit(): void {
@@ -232,6 +317,36 @@ export class FournisseurDashboardPageComponent implements OnInit {
     });
   }
 
+  protected setProductFilters(filters: FilterState): void {
+    this.productFilters.set(filters);
+  }
+
+  protected setOrderFilters(filters: FilterState): void {
+    this.orderFilters.set(filters);
+  }
+
+  protected exportOrdersCsv(): void {
+    const rows = [
+      ['Commande', 'Date', 'Statut', 'Paiement', 'Produits', 'Total MAD'],
+      ...this.filteredOrders().map((order) => [
+        order._id,
+        this.dateText(order.createdAt),
+        this.statusLabel(order.orderStatus),
+        this.statusLabel(order.paymentStatus),
+        order.items.map((item) => `${item.productName} x${item.quantity}`).join(' | '),
+        String(this.orderSupplierTotal(order)),
+      ]),
+    ];
+    const csv = rows.map((row) => row.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'profood-commandes-fournisseur.csv';
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
   protected saveProfile(): void {
     this.auth.updateProfile(this.profileForm).subscribe({
       next: () => this.notice.set('Compte mis a jour.'),
@@ -334,6 +449,14 @@ export class FournisseurDashboardPageComponent implements OnInit {
       ...point,
       percent: Math.max(4, Math.round((point.value / max) * 100)),
     }));
+  }
+
+  private normalize(value: string): string {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
   }
 
   private readApiError(error: unknown): string {

@@ -1,0 +1,51 @@
+<main class="dashboard-layout">
+  <aside class="dashboard-sidebar">
+    <a class="brand" href="#top" aria-label="Profood">
+      <img [src]="logoSrc" alt="Profood" />
+    </a>
+
+    <span class="nav-label">Compte</span>
+    <section class="user-card">
+      <span class="avatar" aria-hidden="true"></span>
+      <strong>{{ userName || 'Utilisateur' }}</strong>
+      <small>{{ userEmail }}</small>
+    </section>
+
+    <span class="nav-label">Dashboard</span>
+    <nav class="dashboard-nav" aria-label="Navigation dashboard">
+      @for (item of navItems; track item.id) {
+        <button
+          type="button"
+          [class.is-active]="activeItem === item.id"
+          (click)="itemSelected.emit(item.id)"
+        >
+          {{ item.label }}
+        </button>
+      }
+    </nav>
+
+    <button type="button" class="logout-button" (click)="logoutRequested.emit()">Se deconnecter</button>
+  </aside>
+
+  <section class="dashboard-main">
+    <header class="dashboard-topbar">
+      <div>
+        <button type="button" aria-label="Menu">=</button>
+        <span>{{ userRole }}</span>
+      </div>
+      <button type="button" (click)="refreshRequested.emit()">Actualiser</button>
+    </header>
+
+    <header class="dashboard-header">
+      <div>
+        @if (eyebrow) {
+          <span>{{ eyebrow }}</span>
+        }
+        <h1>{{ title }}</h1>
+        <p>{{ subtitle }}</p>
+      </div>
+    </header>
+
+    <ng-content />
+  </section>
+</main>

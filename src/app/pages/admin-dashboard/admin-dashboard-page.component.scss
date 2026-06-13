@@ -1,0 +1,276 @@
+.stats-grid,
+.charts-grid,
+.tables-grid,
+.admin-panels {
+  display: grid;
+  gap: 1rem;
+}
+
+.stats-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.charts-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.charts-grid app-chart-card:last-child {
+  grid-column: 1 / -1;
+}
+
+.tables-grid,
+.admin-panels {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.panel,
+.table-card {
+  padding: 1.2rem;
+  border: 1px solid #e6ebf2;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.05);
+}
+
+.panel header,
+.table-card header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.panel h2,
+.table-card h2 {
+  margin: 0;
+  color: #171b22;
+  font-size: 1rem;
+}
+
+.panel header span,
+.table-card header span {
+  color: #768394;
+  font-size: 0.84rem;
+  font-weight: 850;
+}
+
+.mini-list {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.mini-list div {
+  padding: 0.8rem;
+  border-radius: 8px;
+  display: grid;
+  gap: 0.18rem;
+  background: #f8fafc;
+}
+
+.mini-list strong {
+  color: #171b22;
+}
+
+.mini-list span {
+  color: #65758b;
+  font-size: 0.84rem;
+}
+
+.table-wrap {
+  margin-top: 1rem;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  min-width: 860px;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 0.78rem 0.58rem;
+  border-bottom: 1px solid #edf1f5;
+  text-align: left;
+  vertical-align: middle;
+}
+
+th {
+  color: #768394;
+  font-size: 0.72rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+td {
+  color: #29313d;
+  font-weight: 750;
+}
+
+td strong,
+td small {
+  display: block;
+}
+
+td small {
+  margin-top: 0.18rem;
+  color: #768394;
+}
+
+select {
+  min-height: 36px;
+  border: 1px solid #d9e1eb;
+  border-radius: 8px;
+  padding: 0.55rem 0.7rem;
+  color: #171b22;
+  background: #ffffff;
+}
+
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+button {
+  min-height: 36px;
+  border: 0;
+  border-radius: 8px;
+  padding: 0 0.82rem;
+  color: #ffffff;
+  background: #171b22;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+button.ghost {
+  border: 1px solid #d9e1eb;
+  color: #171b22;
+  background: #ffffff;
+}
+
+button.danger {
+  background: #c2412d;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.alert {
+  margin: 0;
+  padding: 0.8rem 1rem;
+  border-radius: 8px;
+  font-weight: 850;
+}
+
+.alert--success {
+  color: #248a3d;
+  background: #ecfdf3;
+}
+
+.alert--error {
+  color: #c2412d;
+  background: #fff0ec;
+}
+
+.order-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  padding: 1rem;
+  display: grid;
+  justify-items: end;
+  background: rgba(17, 24, 39, 0.32);
+}
+
+.order-drawer article {
+  width: min(460px, 100%);
+  height: 100%;
+  padding: 1.2rem;
+  border-radius: 8px;
+  display: grid;
+  align-content: start;
+  gap: 1rem;
+  background: #ffffff;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+}
+
+.order-drawer header,
+.order-drawer footer {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.order-drawer header span {
+  color: #248a3d;
+  font-size: 0.72rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.order-drawer h2 {
+  margin: 0.15rem 0 0;
+}
+
+.drawer-statuses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.order-drawer ul {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+  list-style: none;
+}
+
+.order-drawer li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  color: #65758b;
+}
+
+.drawer-info {
+  padding: 0.85rem;
+  border-radius: 8px;
+  display: grid;
+  gap: 0.25rem;
+  color: #65758b;
+  background: #f8fafc;
+}
+
+.drawer-info strong {
+  color: #171b22;
+}
+
+@media (max-width: 1180px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .stats-grid,
+  .charts-grid,
+  .tables-grid,
+  .admin-panels {
+    grid-template-columns: 1fr;
+  }
+
+  .charts-grid app-chart-card:last-child {
+    grid-column: auto;
+  }
+
+  .panel header,
+  .table-card header {
+    flex-direction: column;
+  }
+}

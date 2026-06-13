@@ -1,6 +1,7 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import {
   CartItem,
   CartProductRef,
@@ -12,6 +13,8 @@ import {
 import { AuthService } from '../../core/auth.service';
 import { CartApiService } from '../../core/cart-api.service';
 import { ClientDashboardService } from '../../core/client-dashboard.service';
+import { FilterState } from '../../core/dashboard.models';
+import { FilterBarComponent } from '../../shared/components/dashboard/filter-bar/filter-bar.component';
 
 type ClientTab = 'overview' | 'cart' | 'orders' | 'account';
 
@@ -23,7 +26,7 @@ interface ChartPoint {
 
 @Component({
   selector: 'app-client-dashboard-page',
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, FilterBarComponent],
   templateUrl: './client-dashboard-page.component.html',
   styleUrl: './client-dashboard-page.component.scss',
 })
@@ -40,6 +43,14 @@ export class ClientDashboardPageComponent implements OnInit {
   protected readonly loading = signal(false);
   protected readonly notice = signal('');
   protected readonly error = signal('');
+  protected readonly orderFilters = signal<FilterState>({ search: '', status: '', date: '' });
+  protected readonly orderStatusOptions: OrderStatus[] = [
+    'PENDING',
+    'CONFIRMED',
+    'PROCESSING',
+    'DELIVERED',
+    'CANCELLED',
+  ];
 
   protected readonly profileForm = {
     name: '',
@@ -91,12 +102,51 @@ export class ClientDashboardPageComponent implements OnInit {
   protected readonly activeOrders = computed(
     () => this.orders().filter((order) => order.orderStatus !== 'CANCELLED').length,
   );
+  protected readonly deliveredOrders = computed(
+    () => this.orders().filter((order) => order.orderStatus === 'DELIVERED').length,
+  );
   protected readonly paidTotal = computed(() =>
     this.orders().reduce(
       (sum, order) => (order.paymentStatus === 'PAID' ? sum + order.totalAmount : sum),
       0,
     ),
   );
+  protected readonly monthlySpending = computed(() => {
+    const now = new Date();
+
+    return this.orders().reduce((sum, order) => {
+      const createdAt = new Date(order.createdAt);
+
+      if (
+        order.orderStatus === 'CANCELLED' ||
+        createdAt.getMonth() !== now.getMonth() ||
+        createdAt.getFullYear() !== now.getFullYear()
+      ) {
+        return sum;
+      }
+
+      return sum + order.totalAmount;
+    }, 0);
+  });
+
+  protected readonly favoriteSuppliers = computed(() => {
+    const suppliers = new Map<string, number>();
+
+    this.orders().forEach((order) => {
+      order.items.forEach((item) => {
+        suppliers.set(item.fournisseurId, (suppliers.get(item.fournisseurId) || 0) + item.quantity);
+      });
+    });
+
+    return [...suppliers.entries()]
+      .sort((first, second) => second[1] - first[1])
+      .slice(0, 5)
+      .map(([supplierId, quantity]) => ({
+        supplierId,
+        label: `Fournisseur ${supplierId.slice(-5).toUpperCase()}`,
+        quantity,
+      }));
+  });
 
   protected readonly orderStatusChart = computed(() => {
     const counts = new Map<OrderStatus, number>();
@@ -112,6 +162,54 @@ export class ClientDashboardPageComponent implements OnInit {
     });
 
     return this.toChartPoints([...amounts.entries()].map(([label, value]) => ({ label, value })));
+  });
+
+  protected readonly spendingByCategoryChart = computed(() => {
+    const categories = new Map<string, number>();
+
+    this.cartItems().forEach((item) => {
+      const category = this.productRef(item)?.category || 'Commandes B2B';
+      categories.set(category, (categories.get(category) || 0) + this.itemTotal(item));
+    });
+
+    if (!categories.size && this.orders().length) {
+      categories.set('Historique commandes', this.paidTotal());
+    }
+
+    return this.toChartPoints([...categories.entries()].map(([label, value]) => ({ label, value })));
+  });
+
+  protected readonly frequentlyPurchasedChart = computed(() => {
+    const products = new Map<string, number>();
+
+    this.orders().forEach((order) => {
+      order.items.forEach((item) => {
+        products.set(item.productName, (products.get(item.productName) || 0) + item.quantity);
+      });
+    });
+
+    return this.toChartPoints(
+      [...products.entries()]
+        .sort((first, second) => second[1] - first[1])
+        .slice(0, 6)
+        .map(([label, value]) => ({ label, value })),
+    );
+  });
+
+  protected readonly filteredOrders = computed(() => {
+    const filters = this.orderFilters();
+    const search = this.normalize(filters.search);
+
+    return this.orders().filter((order) => {
+      const matchesSearch =
+        !search ||
+        [order._id, order.orderStatus, ...order.items.map((item) => item.productName)].some((value) =>
+          this.normalize(value).includes(search),
+        );
+      const matchesStatus = !filters.status || order.orderStatus === filters.status;
+      const matchesDate = !filters.date || order.createdAt.startsWith(filters.date);
+      return matchesSearch && matchesStatus && matchesDate;
+    });
   });
 
   ngOnInit(): void {
@@ -225,6 +323,28 @@ export class ClientDashboardPageComponent implements OnInit {
       },
       error: (error) => this.error.set(this.readApiError(error) || "La commande n'a pas pu etre validee."),
     });
+  }
+
+  protected reorder(order: SupplierOrder): void {
+    if (!order.items.length) {
+      return;
+    }
+
+    forkJoin(order.items.map((item) => this.cartApi.addItem(item.productId, item.quantity))).subscribe({
+      next: (carts) => {
+        const latestCart = carts[carts.length - 1];
+        if (latestCart) {
+          this.cart.set(latestCart);
+        }
+        this.activeTab.set('cart');
+        this.notice.set('Commande ajoutee au panier.');
+      },
+      error: () => this.error.set("La commande n'a pas pu etre ajoutee au panier."),
+    });
+  }
+
+  protected setOrderFilters(filters: FilterState): void {
+    this.orderFilters.set(filters);
   }
 
   protected saveProfile(): void {
@@ -373,6 +493,14 @@ export class ClientDashboardPageComponent implements OnInit {
 
   private shortMonth(value: string): string {
     return new Intl.DateTimeFormat('fr-MA', { month: 'short' }).format(new Date(value));
+  }
+
+  private normalize(value: string): string {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
   }
 
   private toChartPoints(points: { label: string; value: number }[]): ChartPoint[] {

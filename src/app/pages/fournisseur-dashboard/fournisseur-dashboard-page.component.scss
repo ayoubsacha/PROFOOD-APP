@@ -231,7 +231,8 @@ form button,
 .summary-grid,
 .chart-grid,
 .work-surface,
-.account-grid {
+.account-grid,
+.alerts-grid {
   display: grid;
   gap: 1rem;
 }
@@ -338,6 +339,27 @@ form button,
 
 .chart-panel--wide {
   grid-column: 1 / -1;
+}
+
+.alerts-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.alert-card {
+  padding: 1rem;
+  border: 1px solid #ffe4c2;
+  border-radius: 12px;
+  display: grid;
+  gap: 0.25rem;
+  background: #fff8e8;
+}
+
+.alert-card strong {
+  color: #1f2a44;
+}
+
+.alert-card span {
+  color: #7c8da5;
 }
 
 .bar-row {
@@ -556,6 +578,30 @@ td small {
   gap: 0.85rem;
 }
 
+.orders-toolbar {
+  padding: 0.85rem 1rem;
+  border: 1px solid #eef2f7;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  color: #7c8da5;
+  background: #ffffff;
+  font-weight: 850;
+}
+
+.orders-toolbar button {
+  min-height: 38px;
+  border: 0;
+  border-radius: 8px;
+  padding: 0 1rem;
+  background: #1f2a44;
+  color: #ffffff;
+  cursor: pointer;
+  font-weight: 900;
+}
+
 .order-card header strong {
   display: block;
   margin-bottom: 0.2rem;
@@ -626,7 +672,8 @@ td small {
 
   .summary-grid,
   .chart-grid,
-  .work-surface {
+  .work-surface,
+  .alerts-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -661,6 +708,7 @@ td small {
   .summary-grid,
   .chart-grid,
   .work-surface,
+  .alerts-grid,
   .form-grid,
   .account-grid {
     grid-template-columns: 1fr;

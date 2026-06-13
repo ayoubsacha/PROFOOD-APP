@@ -261,7 +261,8 @@ form button,
 .quick-actions,
 .chart-grid,
 .cart-grid,
-.account-grid {
+.account-grid,
+.buyer-grid {
   display: grid;
   gap: 1rem;
 }
@@ -382,14 +383,49 @@ form button,
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.buyer-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .chart-panel,
 .cart-panel,
 .checkout-panel,
 .order-card,
 .form-panel,
 .profile-panel,
-.empty-panel {
+.empty-panel,
+.buyer-panel {
   padding: 1.25rem;
+}
+
+.buyer-panel {
+  border: 1px solid #e6ebf2;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.05);
+}
+
+.buyer-panel h2 {
+  margin: 0 0 1rem;
+  color: #171b22;
+  font-size: 1rem;
+}
+
+.supplier-row {
+  padding: 0.78rem 0;
+  border-top: 1px solid #edf1f5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.supplier-row strong {
+  color: #171b22;
+}
+
+.supplier-row span {
+  color: #65758b;
 }
 
 .bar-row {
@@ -764,7 +800,8 @@ form {
   .quick-actions,
   .chart-grid,
   .cart-grid,
-  .account-grid {
+  .account-grid,
+  .buyer-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -808,6 +845,7 @@ form {
   .chart-grid,
   .cart-grid,
   .account-grid,
+  .buyer-grid,
   .cart-item,
   .tracking-panel {
     grid-template-columns: 1fr;

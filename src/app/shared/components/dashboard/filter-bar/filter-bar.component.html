@@ -1,0 +1,30 @@
+<section class="filter-bar" aria-label="Filtres dashboard">
+  <label>
+    <span>Recherche</span>
+    <input
+      type="search"
+      [placeholder]="searchPlaceholder"
+      [(ngModel)]="filters.search"
+      (ngModelChange)="emitFilters()"
+    />
+  </label>
+
+  @if (statusOptions.length) {
+    <label>
+      <span>Statut</span>
+      <select [(ngModel)]="filters.status" (ngModelChange)="emitFilters()">
+        <option value="">Tous</option>
+        @for (status of statusOptions; track status) {
+          <option [value]="status">{{ status }}</option>
+        }
+      </select>
+    </label>
+  }
+
+  @if (showDate) {
+    <label>
+      <span>Date</span>
+      <input type="date" [(ngModel)]="filters.date" (ngModelChange)="emitFilters()" />
+    </label>
+  }
+</section>

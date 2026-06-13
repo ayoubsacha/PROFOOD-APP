@@ -1,0 +1,41 @@
+<article class="data-table-card">
+  <header>
+    <div>
+      <h2>{{ title }}</h2>
+      @if (subtitle) {
+        <p>{{ subtitle }}</p>
+      }
+    </div>
+  </header>
+
+  @if (visibleRows().length) {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            @for (column of columns; track column.key) {
+              <th>{{ column.label }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of visibleRows(); track $index) {
+            <tr>
+              @for (column of columns; track column.key) {
+                <td>
+                  @if (column.kind === 'status') {
+                    <app-status-badge [status]="cell(row, column)" />
+                  } @else {
+                    {{ cell(row, column) }}
+                  }
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else {
+    <p class="empty-text">{{ emptyText }}</p>
+  }
+</article>

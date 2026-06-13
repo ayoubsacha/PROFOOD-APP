@@ -8,6 +8,7 @@ import { ProductsPageComponent } from './pages/products/products-page.component'
 import { RoleDashboardPageComponent } from './pages/role-dashboard/role-dashboard-page.component';
 import { FournisseurDashboardPageComponent } from './pages/fournisseur-dashboard/fournisseur-dashboard-page.component';
 import { ClientDashboardPageComponent } from './pages/client-dashboard/client-dashboard-page.component';
+import { AdminDashboardPageComponent } from './pages/admin-dashboard/admin-dashboard-page.component';
 
 export const routes: Routes = [
   {
@@ -37,7 +38,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin/dashboard',
-    component: RoleDashboardPageComponent,
+    component: AdminDashboardPageComponent,
     canActivate: [roleAuthGuard],
     data: { roles: ['ADMIN'], dashboard: 'admin' },
     title: 'PlaceToInvest - Admin',
