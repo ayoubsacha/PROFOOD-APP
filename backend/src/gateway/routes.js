@@ -5,6 +5,7 @@ const productRoutes = require('../services/catalog-service/routes/product.routes
 const cartRoutes = require('../services/cart-service/routes/cart.routes');
 const orderRoutes = require('../services/order-service/routes/order.routes');
 const messagingRoutes = require('../services/messaging-service/routes/messaging.routes');
+const notificationRoutes = require('../services/notification-service/routes/notification.routes');
 const analyticsRoutes = require('../services/analytics-service/routes/analytics.routes');
 const assistantRoutes = require('../services/assistant-service/routes/assistant.routes');
 
@@ -25,6 +26,7 @@ function registerGatewayRoutes(app) {
   app.use('/api/cart', cartRoutes);
   app.use('/api/orders', orderRoutes);
   app.use('/api/messages', messagingRoutes);
+  app.use('/api/notifications', notificationRoutes);
   app.use('/api/admin/analytics', analyticsRoutes);
   app.use('/api/assistant', assistantRoutes);
   app.use('/api/rag', assistantRoutes);

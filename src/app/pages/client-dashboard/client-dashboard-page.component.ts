@@ -10,6 +10,7 @@ import {
   Conversation,
   ConversationParty,
   Message,
+  NotificationItem,
   OrderStatus,
   SupplierOrder,
 } from '../../core/api.models';
@@ -18,6 +19,7 @@ import { CartApiService } from '../../core/cart-api.service';
 import { ClientDashboardService } from '../../core/client-dashboard.service';
 import { FilterState } from '../../core/dashboard.models';
 import { MessagingService } from '../../core/messaging.service';
+import { NotificationService } from '../../core/notification.service';
 import { FilterBarComponent } from '../../shared/components/dashboard/filter-bar/filter-bar.component';
 
 type ClientTab = 'overview' | 'cart' | 'orders' | 'account' | 'inbox';
@@ -39,6 +41,7 @@ export class ClientDashboardPageComponent implements OnInit {
   private readonly cartApi = inject(CartApiService);
   private readonly dashboard = inject(ClientDashboardService);
   private readonly messaging = inject(MessagingService);
+  private readonly notificationsApi = inject(NotificationService);
   private readonly route = inject(ActivatedRoute);
 
   protected readonly user = computed(() => this.auth.currentUser());
@@ -49,6 +52,8 @@ export class ClientDashboardPageComponent implements OnInit {
   protected readonly conversations = signal<Conversation[]>([]);
   protected readonly selectedConversation = signal<Conversation | null>(null);
   protected readonly messages = signal<Message[]>([]);
+  protected readonly notifications = signal<NotificationItem[]>([]);
+  protected readonly notificationPanelOpen = signal(false);
   protected readonly profileImagePreview = signal('');
   protected readonly loading = signal(false);
   protected readonly notice = signal('');
@@ -115,6 +120,9 @@ export class ClientDashboardPageComponent implements OnInit {
   );
   protected readonly cartTotal = computed(() => this.cart()?.totalPrice ?? 0);
   protected readonly inboxCount = computed(() => this.conversations().length);
+  protected readonly unreadNotifications = computed(
+    () => this.notifications().filter((notification) => !notification.read).length,
+  );
   protected readonly pendingOrders = computed(
     () => this.orders().filter((order) => order.orderStatus === 'PENDING').length,
   );
@@ -261,6 +269,7 @@ export class ClientDashboardPageComponent implements OnInit {
     this.readRequestedTab();
     this.loadDashboard();
     this.loadInbox();
+    this.loadNotifications();
   }
 
   protected setTab(tab: ClientTab, keepMessages = false): void {
@@ -325,6 +334,13 @@ export class ClientDashboardPageComponent implements OnInit {
         this.conversations.set([]);
         this.messages.set([]);
       },
+    });
+  }
+
+  protected loadNotifications(): void {
+    this.notificationsApi.getNotifications().subscribe({
+      next: (notifications) => this.notifications.set(notifications),
+      error: () => this.notifications.set([]),
     });
   }
 
@@ -499,8 +515,26 @@ export class ClientDashboardPageComponent implements OnInit {
 
   protected selectConversation(conversation: Conversation): void {
     this.selectedConversation.set(conversation);
-    this.messaging.listMessages(conversation._id).subscribe({
-      next: (messages) => this.messages.set(messages),
+    this.messaging.getConversation(conversation._id).subscribe({
+      next: (thread) => {
+        this.selectedConversation.set(thread.conversation);
+        this.messages.set(thread.messages);
+        this.messaging.markConversationAsRead(conversation._id).subscribe({
+          next: () => {
+            this.messages.update((messages) =>
+              messages.map((message) =>
+                this.isOwnMessage(message) ? message : { ...message, isRead: true, status: 'read' },
+              ),
+            );
+            this.conversations.update((conversations) =>
+              conversations.map((item) =>
+                item._id === conversation._id ? { ...item, unreadCount: 0 } : item,
+              ),
+            );
+            this.loadNotifications();
+          },
+        });
+      },
       error: () => this.messages.set([]),
     });
   }
@@ -518,8 +552,47 @@ export class ClientDashboardPageComponent implements OnInit {
         this.messages.update((messages) => [...messages, message]);
         this.replyForm.content = '';
         this.loadInbox();
+        this.loadNotifications();
       },
       error: () => this.error.set("Le message n'a pas pu etre envoye."),
+    });
+  }
+
+  protected toggleNotificationPanel(): void {
+    this.notificationPanelOpen.update((open) => !open);
+  }
+
+  protected openNotification(notification: NotificationItem): void {
+    const openInbox = () => {
+      this.notificationPanelOpen.set(false);
+      this.setTab('inbox', true);
+      this.loadInbox();
+    };
+
+    if (notification.read) {
+      openInbox();
+      return;
+    }
+
+    this.notificationsApi.markAsRead(notification._id).subscribe({
+      next: (updatedNotification) => {
+        this.notifications.update((notifications) =>
+          notifications.map((item) =>
+            item._id === updatedNotification._id ? updatedNotification : item,
+          ),
+        );
+        openInbox();
+      },
+      error: openInbox,
+    });
+  }
+
+  protected markAllNotificationsRead(): void {
+    this.notificationsApi.markAllAsRead().subscribe({
+      next: () =>
+        this.notifications.update((notifications) =>
+          notifications.map((notification) => ({ ...notification, read: true })),
+        ),
     });
   }
 
@@ -533,11 +606,25 @@ export class ClientDashboardPageComponent implements OnInit {
 
   protected conversationSubtitle(conversation: Conversation): string {
     const partner = this.party(conversation.fournisseurId);
-    return partner?.email || conversation.lastMessage || 'Conversation fournisseur';
+    return conversation.productName || partner?.email || 'Conversation fournisseur';
+  }
+
+  protected conversationMeta(conversation: Conversation): string {
+    return conversation.subject || conversation.lastMessage || 'Message fournisseur';
   }
 
   protected messageSender(message: Message): string {
     return this.partyName(message.senderId) || 'Utilisateur';
+  }
+
+  protected isOwnMessage(message: Message): boolean {
+    const senderId = typeof message.senderId === 'string' ? message.senderId : message.senderId._id;
+    return senderId === this.user()?.id;
+  }
+
+  protected messageContext(message: Message): string {
+    const parts = [message.productName, message.subject].filter(Boolean);
+    return parts.length ? parts.join(' - ') : '';
   }
 
   protected productId(item: CartItem): string {

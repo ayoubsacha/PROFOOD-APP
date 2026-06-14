@@ -19,7 +19,12 @@
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
+  padding: 0;
   background: #1f2024;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
   box-shadow: 0 18px 38px rgba(0, 0, 0, 0.28);
   transition:
     transform 180ms ease,
@@ -29,6 +34,11 @@
 .category-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 24px 48px rgba(0, 0, 0, 0.36);
+}
+
+.category-card:focus-visible {
+  outline: 2px solid #d6a85a;
+  outline-offset: 3px;
 }
 
 .category-card__media {
@@ -64,7 +74,12 @@
 .tone-seafood,
 .tone-dairy,
 .tone-meat,
-.tone-maintenance {
+.tone-dry,
+.tone-fours,
+.tone-service-presentation,
+.tone-equipment,
+.tone-maintenance,
+.tone-installation {
   --shine-opacity: 0.08;
   --media-overlay: linear-gradient(
     180deg,
@@ -120,8 +135,33 @@
 }
 
 .tone-maintenance {
-  --category-bg: url('/assets/group-maintenance.png');
+  --category-bg: url('/assets/group-maintenance-service.png');
   background-position: 56% 46%;
+}
+
+.tone-installation {
+  --category-bg: url('/assets/group-installation-service.png');
+  background-position: 52% 46%;
+}
+
+.tone-dry {
+  --category-bg: url('/assets/group-events.png');
+  background-position: 50% 46%;
+}
+
+.tone-fours {
+  --category-bg: url('/assets/group-fours.png');
+  background-position: 50% 50%;
+}
+
+.tone-service-presentation {
+  --category-bg: url('/assets/group-service-presentation.png');
+  background-position: 50% 50%;
+}
+
+.tone-equipment {
+  --category-bg: url('/assets/group-professionals.png');
+  background-position: 50% 42%;
 }
 
 .category-card__body {

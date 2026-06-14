@@ -1,386 +1,699 @@
-<app-dashboard-layout
-  eyebrow="Admin"
-  title="Tableau de bord central"
-  subtitle="Utilisateurs, demandes, produits, commandes et performance globale."
-  [userName]="user()?.name || 'Admin Profood'"
-  [userRole]="user()?.role || 'ADMIN'"
-  [userEmail]="user()?.email || ''"
-  [navItems]="navItems"
-  [activeItem]="activeTab()"
-  (itemSelected)="setTab($event)"
-  (refreshRequested)="loadDashboard()"
-  (logoutRequested)="logout()"
->
-  @if (notice()) {
-    <p class="alert alert--success">{{ notice() }}</p>
-  }
+<main class="admin-dashboard" [class.sidebar-open]="sidebarOpen()">
+  <button
+    type="button"
+    class="sidebar-overlay"
+    aria-label="Fermer le menu"
+    (click)="closeSidebar()"
+  ></button>
 
-  @if (error()) {
-    <p class="alert alert--error">{{ error() }}</p>
-  }
+  <aside class="dashboard-sidebar" aria-label="Navigation dashboard admin">
+    <button type="button" class="sidebar-close" aria-label="Fermer le menu" (click)="closeSidebar()">
+      x
+    </button>
 
-  @if (loading()) {
-    <app-loading-spinner label="Chargement du dashboard admin..." />
-  } @else {
-    @if (activeTab() === 'overview') {
-      <section class="stats-grid" aria-label="Statistiques admin">
-        @for (stat of stats(); track stat.label) {
-          <app-stat-card
-            [label]="stat.label"
-            [value]="stat.value"
-            [helper]="stat.helper || ''"
-            [icon]="stat.icon || ''"
-            [tone]="stat.tone || 'gray'"
-          />
-        }
-      </section>
-
-      <section class="charts-grid">
-        <app-chart-card
-          title="Users by role"
-          subtitle="Repartition des comptes"
-          [points]="analytics()?.usersByRole || []"
-        />
-        <app-chart-card
-          title="Orders by status"
-          subtitle="Etat du pipeline"
-          [points]="analytics()?.ordersByStatus || []"
-        />
-        <app-chart-card
-          title="Products by category"
-          subtitle="Catalogue"
-          [points]="analytics()?.productsByCategory || []"
-        />
-        <app-chart-card
-          title="Revenue evolution"
-          subtitle="Par mois"
-          [points]="revenueChart()"
-          valueSuffix=" MAD"
-        />
-        <app-chart-card
-          title="Top selling products"
-          subtitle="Quantites vendues"
-          [points]="topProductChart()"
-        />
-      </section>
-
-      <section class="tables-grid">
-        <app-data-table
-          title="Recent orders"
-          subtitle="Dernieres commandes"
-          [columns]="recentOrderColumns"
-          [rows]="recentOrderRows()"
-        />
-        <app-data-table
-          title="Recent users"
-          subtitle="Derniers comptes"
-          [columns]="recentUserColumns"
-          [rows]="recentUserRows()"
-        />
-      </section>
-
-      <section class="admin-panels">
-        <article class="panel">
-          <header>
-            <h2>Pending account requests</h2>
-            <span>{{ (analytics()?.pendingRequests || []).length }} demandes</span>
-          </header>
-          @if ((analytics()?.pendingRequests || []).length) {
-            <div class="mini-list">
-              @for (request of analytics()?.pendingRequests || []; track request._id) {
-                <div>
-                  <strong>{{ request.companyName || request.name }}</strong>
-                  <span>{{ request.requestedRole }} - {{ request.email }}</span>
-                </div>
-              }
-            </div>
-          } @else {
-            <app-empty-state title="Aucune demande en attente" message="Les nouvelles demandes apparaitront ici." />
-          }
-        </article>
-
-        <article class="panel">
-          <header>
-            <h2>Low stock products</h2>
-            <span>{{ analytics()?.lowStockCount || 0 }} alertes</span>
-          </header>
-          @if ((analytics()?.lowStockProducts || []).length) {
-            <div class="mini-list">
-              @for (product of analytics()?.lowStockProducts || []; track product._id) {
-                <div>
-                  <strong>{{ product.name }}</strong>
-                  <span>{{ product.category }} - {{ product.stockQuantity }} unites</span>
-                </div>
-              }
-            </div>
-          } @else {
-            <app-empty-state title="Stock normal" message="Aucune alerte de stock faible." />
-          }
-        </article>
-      </section>
-    }
-
-    @if (activeTab() === 'requests') {
-      <app-filter-bar
-        searchPlaceholder="Chercher une demande"
-        [statusOptions]="requestStatusOptions"
-        [showDate]="true"
-        (filtersChange)="setRequestFilters($event)"
-      />
-
-      <section class="table-card">
-        <header>
-          <h2>Demandes de comptes</h2>
-          <span>{{ filteredRequests().length }} resultats</span>
-        </header>
-
-        @if (filteredRequests().length) {
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Compte</th>
-                  <th>Role</th>
-                  <th>Statut</th>
-                  <th>Date</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (request of filteredRequests(); track request._id) {
-                  <tr>
-                    <td>
-                      <strong>{{ request.companyName || request.name }}</strong>
-                      <small>{{ request.email }}</small>
-                    </td>
-                    <td><app-status-badge [status]="request.requestedRole" /></td>
-                    <td><app-status-badge [status]="request.status" /></td>
-                    <td>{{ dateText(request.createdAt) }}</td>
-                    <td>
-                      <div class="row-actions">
-                        <button type="button" [disabled]="request.status !== 'PENDING'" (click)="approveRequest(request)">
-                          Approuver
-                        </button>
-                        <button type="button" class="danger" [disabled]="request.status !== 'PENDING'" (click)="refuseRequest(request)">
-                          Refuser
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
+    @if (user(); as user) {
+      <section class="admin-card">
+        @if (profileImagePreview()) {
+          <img class="avatar-img" [src]="profileImagePreview()" alt="" />
         } @else {
-          <app-empty-state title="Aucune demande" message="Aucune demande ne correspond aux filtres." />
+          <span class="avatar" aria-hidden="true"></span>
         }
+        <strong>{{ user.name || 'Admin Profood' }}</strong>
+        <small>{{ profileForm.email || user.email }}</small>
+      </section>
+
+      <section class="role-card">
+        <span>Role</span>
+        <strong>Admin</strong>
+        <small>{{ statusLabel(user.status || 'ACTIVE') }}</small>
       </section>
     }
 
-    @if (activeTab() === 'users') {
-      <app-filter-bar
-        searchPlaceholder="Chercher un utilisateur"
-        [statusOptions]="userStatusOptions"
-        [showDate]="true"
-        (filtersChange)="setUserFilters($event)"
-      />
+    <span class="nav-label">Navigation</span>
+    <nav class="dashboard-nav">
+      @for (section of sections; track section.id) {
+        <button
+          type="button"
+          [class.is-active]="activeSection() === section.id"
+          [attr.aria-current]="activeSection() === section.id ? 'page' : null"
+          (click)="setSection(section.id)"
+        >
+          <span [class]="'nav-icon nav-icon--' + section.id" aria-hidden="true"></span>
+          <span>{{ section.label }}</span>
+        </button>
+      }
+    </nav>
 
-      <section class="table-card">
-        <header>
-          <h2>Utilisateurs</h2>
-          <span>{{ filteredUsers().length }} comptes</span>
-        </header>
+    <button type="button" class="logout-button" (click)="logout()">
+      <span class="nav-icon nav-icon--logout" aria-hidden="true"></span>
+      <span>Logout</span>
+    </button>
+  </aside>
 
-        @if (filteredUsers().length) {
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Utilisateur</th>
-                  <th>Role</th>
-                  <th>Statut</th>
-                  <th>Inscription</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (user of filteredUsers(); track user._id || user.id) {
-                  <tr>
-                    <td>
-                      <strong>{{ user.companyName || user.name }}</strong>
-                      <small>{{ user.email }}</small>
-                    </td>
-                    <td>
-                      <select [ngModel]="user.role" (ngModelChange)="changeUserRole(user, $event)">
-                        @for (role of roles; track role) {
-                          <option [value]="role">{{ role }}</option>
-                        }
-                      </select>
-                    </td>
-                    <td><app-status-badge [status]="user.status" /></td>
-                    <td>{{ dateText(user.createdAt) }}</td>
-                    <td>
-                      <button type="button" class="ghost" (click)="toggleUserStatus(user)">
-                        {{ user.status === 'SUSPENDED' ? 'Debloquer' : 'Bloquer' }}
-                      </button>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        } @else {
-          <app-empty-state title="Aucun utilisateur" message="Aucun utilisateur ne correspond aux filtres." />
-        }
-      </section>
-    }
+  <section class="dashboard-main">
+    <button type="button" class="mobile-menu-button" (click)="toggleSidebar()">
+      <span aria-hidden="true"></span>
+      Menu
+    </button>
 
-    @if (activeTab() === 'products') {
-      <app-filter-bar
-        searchPlaceholder="Chercher un produit"
-        [statusOptions]="productStatusOptions"
-        [showDate]="false"
-        (filtersChange)="setProductFilters($event)"
-      />
-
-      <section class="table-card">
-        <header>
-          <h2>Produits</h2>
-          <span>{{ filteredProducts().length }} produits</span>
-        </header>
-
-        @if (filteredProducts().length) {
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Produit</th>
-                  <th>Fournisseur</th>
-                  <th>Categorie</th>
-                  <th>Prix</th>
-                  <th>Stock</th>
-                  <th>Statut</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (product of filteredProducts(); track product._id) {
-                  <tr>
-                    <td><strong>{{ product.name }}</strong><small>{{ product.type || 'Standard' }}</small></td>
-                    <td>{{ product.fournisseurName }}</td>
-                    <td>{{ product.category }}</td>
-                    <td>{{ money(product.price) }} MAD</td>
-                    <td>{{ product.stockQuantity }}</td>
-                    <td><app-status-badge [status]="product.status" /></td>
-                    <td>
-                      <button type="button" class="ghost" (click)="toggleProduct(product)">
-                        {{ product.status === 'DISABLED' ? 'Activer' : 'Desactiver' }}
-                      </button>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        } @else {
-          <app-empty-state title="Aucun produit" message="Aucun produit ne correspond aux filtres." />
-        }
-      </section>
-    }
-
-    @if (activeTab() === 'orders') {
-      <app-filter-bar
-        searchPlaceholder="Chercher une commande"
-        [statusOptions]="orderStatusOptions"
-        [showDate]="true"
-        (filtersChange)="setOrderFilters($event)"
-      />
-
-      <section class="table-card">
-        <header>
-          <h2>Commandes</h2>
-          <span>{{ filteredOrders().length }} commandes</span>
-        </header>
-
-        @if (filteredOrders().length) {
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Commande</th>
-                  <th>Produits</th>
-                  <th>Total</th>
-                  <th>Statut</th>
-                  <th>Paiement</th>
-                  <th>Date</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (order of filteredOrders(); track order._id) {
-                  <tr>
-                    <td><strong>{{ order._id.slice(-6).toUpperCase() }}</strong></td>
-                    <td>{{ order.items.length }} lignes</td>
-                    <td>{{ money(order.totalAmount) }} MAD</td>
-                    <td><app-status-badge [status]="order.orderStatus" /></td>
-                    <td><app-status-badge [status]="order.paymentStatus" /></td>
-                    <td>{{ dateText(order.createdAt) }}</td>
-                    <td>
-                      <div class="row-actions">
-                        <button type="button" (click)="viewOrder(order)">Details</button>
-                        <button type="button" class="ghost" (click)="updateOrder(order, 'PROCESSING')">
-                          Preparation
-                        </button>
-                        <button type="button" class="ghost" (click)="updateOrder(order, 'DELIVERED')">
-                          Livree
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        } @else {
-          <app-empty-state title="Aucune commande" message="Aucune commande ne correspond aux filtres." />
-        }
-      </section>
-    }
-  }
-
-  @if (selectedOrder(); as order) {
-    <section class="order-drawer" aria-label="Details commande">
-      <article>
-        <header>
-          <div>
-            <span>Commande</span>
-            <h2>{{ order._id.slice(-6).toUpperCase() }}</h2>
-          </div>
-          <button type="button" (click)="closeOrder()">Fermer</button>
-        </header>
-        <div class="drawer-statuses">
-          <app-status-badge [status]="order.orderStatus" />
-          <app-status-badge [status]="order.paymentStatus" />
+    <header class="dashboard-header">
+      @if (currentSectionCopy(); as copy) {
+        <div>
+          <span>{{ copy.eyebrow }}</span>
+          <h1>{{ copy.title }}</h1>
+          <p>{{ copy.description }}</p>
         </div>
-        <ul>
-          @for (item of order.items; track item.productId) {
-            <li>
-              <span>{{ item.productName }}</span>
-              <strong>{{ item.quantity }} x {{ money(item.unitPrice) }} MAD</strong>
-            </li>
+      }
+      <button type="button" (click)="loadDashboard()">Actualiser</button>
+    </header>
+
+    @if (notice()) {
+      <p class="alert alert--success">{{ notice() }}</p>
+    }
+
+    @if (error()) {
+      <p class="alert alert--error">{{ error() }}</p>
+    }
+
+    @if (loading()) {
+      <p class="loading-strip">Chargement du dashboard admin...</p>
+    }
+
+    @if (activeSection() === 'profile') {
+      <section class="dashboard-section" aria-labelledby="admin-profile-title">
+        <header class="section-heading">
+          <span>Profile</span>
+          <h2 id="admin-profile-title">Gestion du profil admin</h2>
+        </header>
+
+        <section class="account-grid">
+          <article class="form-panel profile-edit-panel">
+            <h2>Edit Profile</h2>
+            <p class="panel-hint">Le mot de passe se modifie uniquement dans la carte Password.</p>
+            <form (ngSubmit)="saveProfile()">
+              <div class="profile-image-field">
+                <div class="profile-preview">
+                  @if (profileImagePreview()) {
+                    <img [src]="profileImagePreview()" alt="Photo admin" />
+                  } @else {
+                    <span class="profile-icon profile-icon--large" aria-hidden="true"></span>
+                  }
+                </div>
+                <label>
+                  <span>Photo admin</span>
+                  <input type="file" accept="image/*" (change)="importProfileImage($event)" />
+                </label>
+                <button type="button" class="ghost" (click)="removeProfileImage()">Supprimer</button>
+              </div>
+
+              <label>
+                <span>Full name</span>
+                <input name="adminFullName" required [(ngModel)]="profileForm.fullName" />
+              </label>
+              <label>
+                <span>Email</span>
+                <input type="email" name="adminEmail" required [(ngModel)]="profileForm.email" />
+              </label>
+              <label>
+                <span>Phone</span>
+                <input name="adminPhone" [(ngModel)]="profileForm.phone" />
+              </label>
+              <button type="submit">Mettre a jour</button>
+            </form>
+          </article>
+
+          <article class="form-panel">
+            <h2>Password</h2>
+            <form (ngSubmit)="changePassword()">
+              <label>
+                <span>Current password</span>
+                <input type="password" name="adminCurrentPassword" required [(ngModel)]="passwordForm.currentPassword" />
+              </label>
+              <label>
+                <span>New password</span>
+                <input type="password" name="adminNewPassword" required minlength="8" [(ngModel)]="passwordForm.newPassword" />
+              </label>
+              <label>
+                <span>Confirm new password</span>
+                <input type="password" name="adminConfirmPassword" required minlength="8" [(ngModel)]="passwordForm.confirmPassword" />
+              </label>
+              <button type="submit">Change password</button>
+            </form>
+          </article>
+
+          <article class="profile-panel account-status-panel">
+            <h2>Manage Account</h2>
+            <p>{{ profileForm.email || user()?.email }}</p>
+            <p>Statut actuel: <strong>{{ statusLabel(user()?.status || 'ACTIVE') }}</strong></p>
+            <p class="panel-hint">Une confirmation forte est demandee si ce compte semble etre le seul admin actif.</p>
+            <button type="button" class="danger" (click)="toggleOwnAccountStatus()">
+              {{ user()?.status === 'ACTIVE' ? 'Deactivate account' : 'Activate account' }}
+            </button>
+            <button type="button" (click)="logout()">Logout</button>
+          </article>
+        </section>
+      </section>
+    }
+
+    @if (activeSection() === 'accounts') {
+      <section class="dashboard-section" aria-labelledby="admin-accounts-title">
+        <header class="section-heading">
+          <span>Accounts</span>
+          <h2 id="admin-accounts-title">Gestion des utilisateurs</h2>
+        </header>
+
+        <section class="filter-panel">
+          <label>
+            <span>Search</span>
+            <input #accountSearch type="search" placeholder="Nom, email ou entreprise" (input)="setAccountFilter('search', accountSearch.value)" />
+          </label>
+          <label>
+            <span>Role</span>
+            <select #accountRole (change)="setAccountFilter('role', accountRole.value)">
+              <option value="">Tous</option>
+              @for (role of roles; track role) {
+                <option [value]="role">{{ statusLabel(role) }}</option>
+              }
+            </select>
+          </label>
+          <label>
+            <span>Status</span>
+            <select #accountStatus (change)="setAccountFilter('status', accountStatus.value)">
+              <option value="">Tous</option>
+              @for (status of userStatusOptions; track status) {
+                <option [value]="status">{{ statusLabel(status) }}</option>
+              }
+            </select>
+          </label>
+        </section>
+
+        <section class="work-surface">
+          <article class="table-panel">
+            <header>
+              <div>
+                <h2>Utilisateurs</h2>
+                <p>{{ filteredUsers().length }} comptes</p>
+              </div>
+            </header>
+            @if (filteredUsers().length) {
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Email</th>
+                      <th>Role</th>
+                      <th>Company</th>
+                      <th>Phone</th>
+                      <th>Status</th>
+                      <th>Created</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (account of filteredUsers(); track userId(account)) {
+                      <tr>
+                        <td><strong>{{ account.name }}</strong></td>
+                        <td>{{ account.email }}</td>
+                        <td>
+                          <select #rowRole [value]="account.role" (change)="changeUserRole(account, rowRole.value)">
+                            @for (role of roles; track role) {
+                              <option [value]="role">{{ statusLabel(role) }}</option>
+                            }
+                          </select>
+                        </td>
+                        <td>{{ account.companyName || '-' }}</td>
+                        <td>{{ account.phone || '-' }}</td>
+                        <td>
+                          <span class="status-pill" [class]="'status-pill status-pill--' + account.status">
+                            {{ statusLabel(account.status) }}
+                          </span>
+                        </td>
+                        <td>{{ dateText(account.createdAt) }}</td>
+                        <td>
+                          <div class="row-actions">
+                            <button type="button" class="ghost" (click)="viewUser(account)">Details</button>
+                            <button type="button" (click)="toggleUserStatus(account)">
+                              {{ account.status === 'SUSPENDED' ? 'Activer' : 'Desactiver' }}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else {
+              <section class="empty-panel">
+                <h2>Aucun utilisateur</h2>
+                <p>Aucun compte ne correspond aux filtres.</p>
+              </section>
+            }
+          </article>
+
+          <aside class="profile-panel detail-panel">
+            <h2>User details</h2>
+            @if (selectedUser(); as selected) {
+              <p>{{ selected.companyName || selected.name }}</p>
+              <p>{{ selected.email }}</p>
+              <p>{{ selected.phone || 'Telephone indisponible' }}</p>
+              <p>Status: <strong>{{ statusLabel(selected.status) }}</strong></p>
+              <p>Created: {{ dateText(selected.createdAt) }}</p>
+
+              @if (selectedClientDetails(); as details) {
+                <div class="detail-list">
+                  <div><span>Orders</span><strong>{{ details.orderCount }}</strong></div>
+                  <div><span>Total spending</span><strong>{{ money(details.totalSpending) }} MAD</strong></div>
+                  <div><span>Favorite supplier</span><strong>{{ details.favoriteSupplier }}</strong></div>
+                </div>
+                <h3>Last orders</h3>
+                @for (order of details.lastOrders; track order._id) {
+                  <div class="mini-row">
+                    <strong>{{ order._id.slice(-6).toUpperCase() }}</strong>
+                    <span>{{ money(order.totalAmount) }} MAD - {{ statusLabel(order.orderStatus) }}</span>
+                  </div>
+                }
+              }
+
+              @if (selectedFournisseurDetails(); as details) {
+                <div class="detail-list">
+                  <div><span>Total income</span><strong>{{ money(details.totalIncome) }} MAD</strong></div>
+                  <div><span>Products</span><strong>{{ details.productCount }}</strong></div>
+                  <div><span>Active products</span><strong>{{ details.activeProducts }}</strong></div>
+                  <div><span>Out of stock</span><strong>{{ details.outOfStockProducts }}</strong></div>
+                  <div><span>Accepted orders</span><strong>{{ details.acceptedOrders }}</strong></div>
+                  <div><span>Refused orders</span><strong>{{ details.refusedOrders }}</strong></div>
+                  <div><span>Pending orders</span><strong>{{ details.pendingOrders }}</strong></div>
+                  <div><span>Best product</span><strong>{{ details.bestProduct }}</strong></div>
+                  <div><span>Rating</span><strong>{{ details.rating }}</strong></div>
+                </div>
+              }
+              <button type="button" class="ghost" (click)="closeUserDetails()">Fermer</button>
+            } @else {
+              <p class="empty-text">Selectionnez un utilisateur pour voir les details.</p>
+            }
+          </aside>
+        </section>
+      </section>
+    }
+
+    @if (activeSection() === 'requests') {
+      <section class="dashboard-section" aria-labelledby="admin-requests-title">
+        <header class="section-heading">
+          <span>Requests</span>
+          <h2 id="admin-requests-title">Gestion des Requests</h2>
+        </header>
+
+        <section class="filter-panel">
+          <label>
+            <span>Search</span>
+            <input #requestSearch type="search" placeholder="Nom, email ou entreprise" (input)="setRequestFilter('search', requestSearch.value)" />
+          </label>
+          <label>
+            <span>Status</span>
+            <select #requestStatus (change)="setRequestFilter('status', requestStatus.value)">
+              <option value="">Tous</option>
+              @for (status of requestStatusOptions; track status) {
+                <option [value]="status">{{ statusLabel(status) }}</option>
+              }
+            </select>
+          </label>
+          <label>
+            <span>Date</span>
+            <input #requestDate type="date" (input)="setRequestFilter('date', requestDate.value)" />
+          </label>
+        </section>
+
+        <article class="table-panel">
+          <header>
+            <div>
+              <h2>Demandes de comptes</h2>
+              <p>{{ filteredRequests().length }} demandes</p>
+            </div>
+          </header>
+
+          @if (filteredRequests().length) {
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Applicant</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Company</th>
+                    <th>Phone</th>
+                    <th>Status</th>
+                    <th>Submitted</th>
+                    <th>Refusal reason</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (request of filteredRequests(); track request._id) {
+                    <tr>
+                      <td><strong>{{ request.name }}</strong></td>
+                      <td>{{ request.email }}</td>
+                      <td>{{ statusLabel(request.requestedRole) }}</td>
+                      <td>{{ request.companyName || '-' }}</td>
+                      <td>{{ request.phone || '-' }}</td>
+                      <td>
+                        <span class="status-pill" [class]="'status-pill status-pill--' + request.status">
+                          {{ statusLabel(request.status) }}
+                        </span>
+                      </td>
+                      <td>{{ dateText(request.createdAt) }}</td>
+                      <td>{{ request.status === 'REFUSED' ? requestReviewNote(request) || request.message || '-' : '-' }}</td>
+                      <td>
+                        <div class="row-actions">
+                          <button type="button" class="ghost" (click)="viewRequest(request)">Details</button>
+                          <button type="button" [disabled]="request.status !== 'PENDING'" (click)="approveRequest(request)">Accept</button>
+                          <button type="button" class="danger" [disabled]="request.status !== 'PENDING'" (click)="refuseRequest(request)">Refuse</button>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <section class="empty-panel">
+              <h2>Aucune demande</h2>
+              <p>Aucune demande ne correspond aux filtres.</p>
+            </section>
           }
-        </ul>
-        @if (order.checkoutInfo; as info) {
-          <section class="drawer-info">
-            <strong>{{ info.companyName || info.contactName }}</strong>
-            <span>{{ info.phone }} - {{ info.email }}</span>
-            <span>{{ info.address }} {{ info.city }}</span>
-          </section>
+        </article>
+
+        @if (selectedRequest(); as request) {
+          <article class="profile-panel detail-panel">
+            <h2>Details request</h2>
+            <p>{{ request.companyName || request.name }}</p>
+            <p>{{ request.email }} - {{ request.phone || 'Telephone indisponible' }}</p>
+            <p>{{ request.address || 'Adresse indisponible' }}</p>
+            <p>{{ request.message || 'Aucun message candidat.' }}</p>
+            <p>Status: <strong>{{ statusLabel(request.status) }}</strong></p>
+            @if (request.status === 'REFUSED') {
+              <p>Reason: {{ requestReviewNote(request) || '-' }}</p>
+            }
+          </article>
         }
-        <footer>
-          <strong>Total: {{ money(order.totalAmount) }} MAD</strong>
-        </footer>
-      </article>
-    </section>
-  }
-</app-dashboard-layout>
+      </section>
+    }
+
+    @if (activeSection() === 'products') {
+      <section class="dashboard-section" aria-labelledby="admin-products-title">
+        <header class="section-heading">
+          <span>Products</span>
+          <h2 id="admin-products-title">Moderation catalogue</h2>
+        </header>
+
+        <section class="filter-panel filter-panel--wide">
+          <label>
+            <span>Search</span>
+            <input #productSearch type="search" placeholder="Nom du produit" (input)="setProductFilter('search', productSearch.value)" />
+          </label>
+          <label>
+            <span>Category</span>
+            <select #productCategory (change)="setProductFilter('category', productCategory.value)">
+              <option value="">Toutes</option>
+              @for (category of categoryOptions(); track category) {
+                <option [value]="category">{{ category }}</option>
+              }
+            </select>
+          </label>
+          <label>
+            <span>Supplier</span>
+            <select #productSupplier (change)="setProductFilter('supplier', productSupplier.value)">
+              <option value="">Tous</option>
+              @for (supplier of supplierOptions(); track supplier) {
+                <option [value]="supplier">{{ supplier }}</option>
+              }
+            </select>
+          </label>
+          <label>
+            <span>Status</span>
+            <select #productStatus (change)="setProductFilter('status', productStatus.value)">
+              <option value="">Tous</option>
+              @for (status of productStatusOptions; track status) {
+                <option [value]="status">{{ statusLabel(status) }}</option>
+              }
+            </select>
+          </label>
+        </section>
+
+        <article class="table-panel">
+          <header>
+            <div>
+              <h2>Produits</h2>
+              <p>{{ filteredProducts().length }} produits</p>
+            </div>
+          </header>
+
+          @if (filteredProducts().length) {
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Image</th>
+                    <th>Product</th>
+                    <th>Supplier</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Unit</th>
+                    <th>Stock</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (product of filteredProducts(); track product._id) {
+                    <tr>
+                      <td><img class="product-thumb" [src]="productImage(product)" [alt]="product.name" /></td>
+                      <td><strong>{{ product.name }}</strong><small>{{ product.type || 'Standard' }}</small></td>
+                      <td>{{ product.fournisseurName }}</td>
+                      <td>{{ product.category }}</td>
+                      <td>{{ money(product.price) }} MAD</td>
+                      <td>{{ productUnit(product) }}</td>
+                      <td>{{ product.stockQuantity }}</td>
+                      <td>
+                        <span class="status-pill" [class]="'status-pill status-pill--' + product.status">
+                          {{ statusLabel(product.status) }}
+                        </span>
+                      </td>
+                      <td>{{ dateText(product.createdAt) }}</td>
+                      <td>
+                        <div class="row-actions">
+                          <button type="button" class="ghost" (click)="viewProduct(product)">Details</button>
+                          <button type="button" (click)="toggleProduct(product)">
+                            {{ product.status === 'DISABLED' ? 'Activer' : 'Desactiver' }}
+                          </button>
+                          <button type="button" class="danger" (click)="deleteProduct(product)">Delete</button>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <section class="empty-panel">
+              <h2>Aucun produit</h2>
+              <p>Aucun produit ne correspond aux filtres.</p>
+            </section>
+          }
+        </article>
+
+        @if (selectedProduct(); as product) {
+          <article class="profile-panel detail-panel">
+            <h2>Product details</h2>
+            <p>{{ product.name }}</p>
+            <p>{{ product.fournisseurName }}</p>
+            <p>{{ product.category }} - {{ productUnit(product) }}</p>
+            <p>{{ money(product.price) }} MAD - {{ product.stockQuantity }} en stock</p>
+            <p>Status: <strong>{{ statusLabel(product.status) }}</strong></p>
+          </article>
+        }
+      </section>
+    }
+
+    @if (activeSection() === 'inbox') {
+      <section class="dashboard-section" aria-labelledby="admin-inbox-title">
+        <header class="section-heading">
+          <span>Boite de reception</span>
+          <h2 id="admin-inbox-title">Messages utilisateurs</h2>
+        </header>
+
+        <article class="profile-panel inbox-panel">
+          <header>
+            <div>
+              <h2>Boite de reception</h2>
+              <p>Conversations client-fournisseur visibles par l'administration.</p>
+            </div>
+            <button type="button" class="ghost" (click)="loadInbox()">Actualiser</button>
+          </header>
+
+          @if (inboxLoading()) {
+            <p class="loading-strip">Chargement des messages...</p>
+          }
+
+          <div class="inbox-layout">
+            <div class="conversation-list">
+              @if (conversations().length) {
+                @for (conversation of conversations(); track conversation._id) {
+                  <button
+                    type="button"
+                    [class.is-active]="selectedConversation()?._id === conversation._id"
+                    (click)="selectConversation(conversation)"
+                  >
+                    <strong>{{ conversationTitle(conversation) }}</strong>
+                    <span>{{ conversation.productName || 'Produit non lie' }}</span>
+                    <small>{{ conversation.subject || conversation.lastMessage || 'Conversation' }}</small>
+                    @if (conversation.unreadCount) {
+                      <b>{{ conversation.unreadCount }} non lu</b>
+                    }
+                  </button>
+                }
+              } @else {
+                <p class="empty-text">Aucun message pour le moment.</p>
+              }
+            </div>
+
+            <div class="message-thread">
+              @if (selectedConversation()) {
+                <h2>{{ conversationTitle(selectedConversation()!) }}</h2>
+                <div class="message-list">
+                  @for (message of messages(); track message._id) {
+                    <article class="message-bubble">
+                      <strong>{{ messageSender(message) }} - {{ messageSenderRole(message) }}</strong>
+                      <p>{{ message.content }}</p>
+                      <small>{{ dateText(message.createdAt) }}</small>
+                    </article>
+                  } @empty {
+                    <p class="empty-text">Cette conversation est vide.</p>
+                  }
+                </div>
+                <button type="button" (click)="replyUnavailable()">Reply</button>
+              } @else {
+                <p class="empty-text">Selectionnez une conversation.</p>
+              }
+            </div>
+          </div>
+        </article>
+      </section>
+    }
+
+    @if (activeSection() === 'charts') {
+      <section class="dashboard-section" aria-labelledby="admin-charts-title">
+        <header class="section-heading">
+          <span>Charts</span>
+          <h2 id="admin-charts-title">Statistiques globales</h2>
+        </header>
+
+        <section class="summary-grid" aria-label="Indicateurs admin">
+          @for (stat of adminStats(); track stat.label) {
+            <article class="summary-card" [class]="'summary-card summary-card--' + stat.tone">
+              <i aria-hidden="true">{{ stat.icon }}</i>
+              <span>{{ stat.label }}</span>
+              <strong>{{ stat.value }}</strong>
+              <small>{{ stat.helper }}</small>
+            </article>
+          }
+        </section>
+
+        <section class="chart-grid">
+          <article class="chart-panel">
+            <h2>Users by role</h2>
+            @for (point of usersByRoleChart(); track point.label) {
+              <div class="bar-row">
+                <span>{{ point.label }}</span>
+                <div><i [style.width.%]="point.percent"></i></div>
+                <strong>{{ point.value }}</strong>
+              </div>
+            }
+          </article>
+
+          <article class="chart-panel">
+            <h2>Orders by status</h2>
+            @for (point of ordersByStatusChart(); track point.label) {
+              <div class="bar-row">
+                <span>{{ point.label }}</span>
+                <div><i [style.width.%]="point.percent"></i></div>
+                <strong>{{ point.value }}</strong>
+              </div>
+            }
+          </article>
+
+          <article class="chart-panel">
+            <h2>Products by category</h2>
+            @for (point of productsByCategoryChart(); track point.label) {
+              <div class="bar-row">
+                <span>{{ point.label }}</span>
+                <div><i [style.width.%]="point.percent"></i></div>
+                <strong>{{ point.value }}</strong>
+              </div>
+            }
+          </article>
+
+          <article class="chart-panel">
+            <h2>Revenue by month</h2>
+            @for (point of revenueByMonthChart(); track point.label) {
+              <div class="bar-row">
+                <span>{{ point.label }}</span>
+                <div><i [style.width.%]="point.percent"></i></div>
+                <strong>{{ money(point.value) }}</strong>
+              </div>
+            }
+          </article>
+
+          <article class="chart-panel">
+            <h2>Best fournisseurs by income</h2>
+            @for (point of bestFournisseursChart(); track point.label) {
+              <div class="bar-row">
+                <span>{{ point.label }}</span>
+                <div><i [style.width.%]="point.percent"></i></div>
+                <strong>{{ money(point.value) }}</strong>
+              </div>
+            } @empty {
+              <p class="empty-text">Aucun revenu fournisseur pour le moment.</p>
+            }
+          </article>
+
+          <article class="chart-panel">
+            <h2>Best clients by spending</h2>
+            @for (point of bestClientsChart(); track point.label) {
+              <div class="bar-row">
+                <span>{{ point.label }}</span>
+                <div><i [style.width.%]="point.percent"></i></div>
+                <strong>{{ money(point.value) }}</strong>
+              </div>
+            } @empty {
+              <p class="empty-text">Aucun client acheteur pour le moment.</p>
+            }
+          </article>
+
+          <article class="profile-panel best-panel">
+            <h2>Best spending user</h2>
+            @if (bestSpendingClient(); as client) {
+              <p>{{ client.companyName || client.clientName }}</p>
+              <p>{{ client.orderCount }} commandes - {{ money(client.totalSpending) }} MAD</p>
+              <p>Derniere commande: {{ dateText(client.lastOrderDate) }}</p>
+            } @else {
+              <p class="empty-text">Aucun achat client pour le moment.</p>
+            }
+          </article>
+
+          <article class="profile-panel best-panel">
+            <h2>Best seller fournisseur</h2>
+            @if (bestSellerFournisseur(); as supplier) {
+              <p>{{ supplier.companyName || supplier.fournisseurName }}</p>
+              <p>{{ money(supplier.totalIncome) }} MAD - {{ supplier.acceptedOrders }} commandes</p>
+              <p>{{ supplier.productsSold }} produits vendus - Rating {{ supplier.rating }}</p>
+            } @else {
+              <p class="empty-text">Aucune vente fournisseur pour le moment.</p>
+            }
+          </article>
+        </section>
+      </section>
+    }
+  </section>
+</main>

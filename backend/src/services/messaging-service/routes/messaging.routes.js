@@ -10,6 +10,14 @@ const router = express.Router();
 
 router.use(authMiddleware, activeAccountMiddleware);
 
+router.post(
+  '/contact-fournisseur',
+  roleMiddleware('CLIENT_PRO'),
+  validators.contactFournisseurValidator,
+  validateRequest,
+  controller.contactFournisseur,
+);
+router.get('/inbox', roleMiddleware('ADMIN', 'FOURNISSEUR', 'CLIENT_PRO'), controller.inbox);
 router.get(
   '/conversations',
   roleMiddleware('ADMIN', 'FOURNISSEUR', 'CLIENT_PRO'),
@@ -21,6 +29,34 @@ router.post(
   validators.startConversationValidator,
   validateRequest,
   controller.startConversation,
+);
+router.get(
+  '/conversations/:conversationId',
+  roleMiddleware('ADMIN', 'FOURNISSEUR', 'CLIENT_PRO'),
+  validators.conversationIdValidator,
+  validateRequest,
+  controller.getConversationThread,
+);
+router.post(
+  '/conversations/:conversationId/reply',
+  roleMiddleware('FOURNISSEUR', 'CLIENT_PRO'),
+  validators.sendMessageValidator,
+  validateRequest,
+  controller.sendMessage,
+);
+router.patch(
+  '/conversations/:conversationId/read',
+  roleMiddleware('ADMIN', 'FOURNISSEUR', 'CLIENT_PRO'),
+  validators.conversationIdValidator,
+  validateRequest,
+  controller.markConversationRead,
+);
+router.patch(
+  '/conversations/:conversationId/archive',
+  roleMiddleware('ADMIN', 'FOURNISSEUR', 'CLIENT_PRO'),
+  validators.conversationIdValidator,
+  validateRequest,
+  controller.archiveConversation,
 );
 router.get(
   '/conversations/:conversationId/messages',

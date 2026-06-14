@@ -2,7 +2,11 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ProductApiService } from '../../core/product-api.service';
-import { PRODUCT_CATALOG, ProductCatalogItem } from '../../models/product-catalog.models';
+import {
+  EQUIPMENT_MENU_FAMILY_NAMES,
+  PRODUCT_CATALOG,
+  ProductCatalogItem,
+} from '../../models/product-catalog.models';
 
 type ProductGroupId =
   | 'fruits-legumes'
@@ -11,7 +15,9 @@ type ProductGroupId =
   | 'viandes'
   | 'fruits-secs'
   | 'equipements'
-  | 'maintenance';
+  | 'maintenance'
+  | 'installation'
+  | 'autres';
 
 interface ProductGroupConfig {
   id: ProductGroupId;
@@ -38,6 +44,10 @@ export class ProductsPageComponent {
 
   protected readonly allProducts = signal<ProductCatalogItem[]>(PRODUCT_CATALOG);
   protected readonly isLoading = signal(true);
+  protected readonly selectedFamily = signal<string | null>(null);
+  protected readonly focusedBrandSearch = signal('');
+  protected readonly focusedCharacteristic = signal('');
+  protected readonly focusedSort = signal('');
   protected readonly searchTerms = signal<Record<ProductGroupId, string>>({
     'fruits-legumes': '',
     poissons: '',
@@ -46,6 +56,8 @@ export class ProductsPageComponent {
     'fruits-secs': '',
     equipements: '',
     maintenance: '',
+    installation: '',
+    autres: '',
   });
 
   protected readonly groupConfigs: ProductGroupConfig[] = [
@@ -129,20 +141,77 @@ export class ProductsPageComponent {
       label: 'Équipements professionnels',
       description: 'Matériel de cuisine professionnelle, froid, cuisson et préparation.',
       image: '/assets/group-professionals.png',
-      families: ['Equipements professionnels'],
+      families: ['Equipements professionnels', ...EQUIPMENT_MENU_FAMILY_NAMES],
     },
     {
       id: 'maintenance',
       label: 'Maintenance',
-      description: 'Interventions, installation, diagnostic et contrats de maintenance cuisine.',
-      image: '/assets/group-maintenance.png',
+      description: 'Interventions, diagnostic, reparation et contrats de maintenance cuisine.',
+      image: '/assets/group-maintenance-service.png',
       families: ['Maintenance'],
+    },
+    {
+      id: 'installation',
+      label: 'Installation',
+      description: 'Pose, raccordement, mise en service et installation sur site pour cuisines CHR.',
+      image: '/assets/group-installation-service.png',
+      families: ['Installation'],
     },
   ];
 
-  protected readonly groups = computed<ProductGroupView[]>(() =>
-    this.groupConfigs.map((group) => {
-      const baseProducts = this.allProducts().filter((product) => this.belongsToGroup(product, group));
+  protected readonly pageTitle = computed(() => this.selectedFamily() ?? 'Catalogue PROFOOD');
+
+  protected readonly pageDescription = computed(() => {
+    const family = this.selectedFamily();
+
+    return family
+      ? `Tous les produits disponibles dans la catégorie ${family}.`
+      : 'Produits alimentaires, équipements professionnels et services de maintenance pour les clients B2B.';
+  });
+
+  protected readonly groups = computed<ProductGroupView[]>(() => {
+    const selectedFamily = this.selectedFamily();
+
+    if (selectedFamily) {
+      const focusedGroup = this.focusedGroupForQuery(selectedFamily);
+
+      if (!focusedGroup) {
+        return [];
+      }
+
+      const query = this.normalize(selectedFamily);
+      const isGroupLabel = this.normalize(focusedGroup.label) === query;
+      const baseProducts = this.productsForSelectedFamily();
+      const search = this.normalize(this.searchTerms()[focusedGroup.id]);
+      const brandSearch = this.normalize(this.focusedBrandSearch());
+      const characteristic = this.normalize(this.focusedCharacteristic());
+      const sortedProducts = baseProducts
+        .filter((product) => {
+          const matchesName = !search || this.normalize(product.name).includes(search);
+          const matchesBrand =
+            !brandSearch || this.normalize(product.supplier.name).includes(brandSearch);
+          const matchesCharacteristic =
+            !characteristic ||
+            product.cardCharacteristics.some((tag) => this.normalize(tag) === characteristic) ||
+            product.characteristics.some((tag) => this.normalize(tag) === characteristic);
+
+          return matchesName && matchesBrand && matchesCharacteristic;
+        })
+        .sort((first, second) => this.compareFocusedProducts(first, second));
+
+      return [{
+        ...focusedGroup,
+        label: isGroupLabel ? focusedGroup.label : selectedFamily,
+        description: isGroupLabel
+          ? focusedGroup.description
+          : `Produits associés à la catégorie ${selectedFamily}.`,
+        totalProducts: baseProducts.length,
+        products: sortedProducts,
+      }];
+    }
+
+    return this.groupConfigs.map((group) => {
+      const baseProducts = this.productSource().filter((product) => this.belongsToGroup(product, group));
       const search = this.normalize(this.searchTerms()[group.id]);
 
       return {
@@ -152,8 +221,15 @@ export class ProductsPageComponent {
           return !search || this.normalize(product.name).includes(search);
         }),
       };
-    }),
-  );
+    });
+  });
+
+  protected readonly focusedGroup = computed(() => (this.selectedFamily() ? this.groups()[0] : null));
+
+  protected readonly focusedCharacteristicOptions = computed(() => {
+    const values = this.productsForSelectedFamily().flatMap((product) => product.cardCharacteristics);
+    return [...new Set(values)].sort((first, second) => first.localeCompare(second, 'fr'));
+  });
 
   constructor() {
     this.productApi
@@ -171,8 +247,14 @@ export class ProductsPageComponent {
 
     this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((params) => {
       const family = params.get('family');
+      const selectedFamily = family?.trim() || null;
 
-      if (family) {
+      this.selectedFamily.set(selectedFamily);
+      this.focusedBrandSearch.set('');
+      this.focusedCharacteristic.set('');
+      this.focusedSort.set('');
+
+      if (!selectedFamily && family) {
         this.queueScrollToQuery(family);
       }
     });
@@ -203,6 +285,18 @@ export class ProductsPageComponent {
     }));
   }
 
+  protected updateFocusedBrandSearch(event: Event): void {
+    this.focusedBrandSearch.set((event.target as HTMLInputElement).value);
+  }
+
+  protected updateFocusedCharacteristic(event: Event): void {
+    this.focusedCharacteristic.set((event.target as HTMLSelectElement).value);
+  }
+
+  protected updateFocusedSort(event: Event): void {
+    this.focusedSort.set((event.target as HTMLSelectElement).value);
+  }
+
   protected sectionId(groupId: ProductGroupId): string {
     return `catalogue-${groupId}`;
   }
@@ -228,11 +322,13 @@ export class ProductsPageComponent {
     return product.cardCharacteristics.slice(0, 3);
   }
 
+  protected ratingText(product: ProductCatalogItem): string {
+    return `${product.rating.toFixed(1)}/5 - ${product.ratingCount} avis`;
+  }
+
   protected isService(product: ProductCatalogItem): boolean {
-    return (
-      this.normalize(product.family) === this.normalize('Maintenance') ||
-      product.cardCharacteristics.some((tag) => this.normalize(tag).includes('service'))
-    );
+    const family = this.normalize(product.family);
+    return family === this.normalize('Maintenance') || family === this.normalize('Installation');
   }
 
   private queueScrollToQuery(value: string): void {
@@ -246,6 +342,10 @@ export class ProductsPageComponent {
   }
 
   private groupIdForQuery(value: string): ProductGroupId | null {
+    return this.focusedGroupForQuery(value)?.id ?? null;
+  }
+
+  private groupForQuery(value: string): ProductGroupConfig | null {
     const query = this.normalize(value);
     const group = this.groupConfigs.find((item) => {
       return (
@@ -254,12 +354,76 @@ export class ProductsPageComponent {
       );
     });
 
-    return group?.id ?? null;
+    return group ?? null;
+  }
+
+  private focusedGroupForQuery(value: string): ProductGroupConfig | null {
+    const configuredGroup = this.groupForQuery(value);
+
+    if (configuredGroup) {
+      return configuredGroup;
+    }
+
+    const matchingProduct = this.productSource().find(
+      (product) => this.normalize(product.family) === this.normalize(value),
+    );
+
+    return matchingProduct
+      ? {
+          id: 'autres',
+          label: value,
+          description: `Catalogue complet pour ${value}.`,
+          image: matchingProduct.imageUrl,
+          families: [matchingProduct.family],
+        }
+      : null;
   }
 
   private belongsToGroup(product: ProductCatalogItem, group: ProductGroupConfig): boolean {
     const productFamily = this.normalize(product.family);
     return group.families.some((family) => this.normalize(family) === productFamily);
+  }
+
+  private productsForSelectedFamily(): ProductCatalogItem[] {
+    const selectedFamily = this.selectedFamily();
+    const focusedGroup = selectedFamily ? this.focusedGroupForQuery(selectedFamily) : null;
+
+    if (!selectedFamily || !focusedGroup) {
+      return [];
+    }
+
+    const query = this.normalize(selectedFamily);
+    const isGroupLabel = this.normalize(focusedGroup.label) === query;
+
+    return this.productSource().filter((product) => {
+      return isGroupLabel
+        ? this.belongsToGroup(product, focusedGroup)
+        : this.normalize(product.family) === query;
+    });
+  }
+
+  private productSource(): ProductCatalogItem[] {
+    const productsBySlug = new Map<string, ProductCatalogItem>();
+
+    PRODUCT_CATALOG.forEach((product) => productsBySlug.set(product.slug, product));
+    this.allProducts().forEach((product) => productsBySlug.set(product.slug, product));
+
+    return [...productsBySlug.values()];
+  }
+
+  private compareFocusedProducts(first: ProductCatalogItem, second: ProductCatalogItem): number {
+    switch (this.focusedSort()) {
+      case 'price-asc':
+        return first.priceMad - second.priceMad;
+      case 'price-desc':
+        return second.priceMad - first.priceMad;
+      case 'rating-desc':
+        return second.rating - first.rating;
+      case 'name-asc':
+        return first.name.localeCompare(second.name, 'fr');
+      default:
+        return 0;
+    }
   }
 
   private scrollToSection(sectionId: string, attempt = 0): void {

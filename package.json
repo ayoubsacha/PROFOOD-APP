@@ -8,6 +8,7 @@
     "backend:dev": "nodemon backend/src/server.js",
     "seed:admin": "node backend/src/scripts/seedAdmin.js",
     "seed:catalog": "node backend/src/scripts/seedCatalogProducts.js",
+    "seed:equipment": "node backend/src/scripts/seedEquipmentSupplier.js",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"

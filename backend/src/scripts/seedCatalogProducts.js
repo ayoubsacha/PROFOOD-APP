@@ -7,6 +7,8 @@ const Product = require('../services/catalog-service/models/product.model');
 const User = require('../services/auth-service/models/user.model');
 
 const DEFAULT_FOURNISSEUR_EMAIL = 'fournisseur@profood.com';
+const DEFAULT_EQUIPMENT_EMAIL = 'equipements@profood.com';
+const DEFAULT_EQUIPMENT_PASSWORD = 'Equipements12345';
 const DEFAULT_MAINTENANCE_EMAIL = 'maintenance@profood.ma';
 const DEFAULT_MAINTENANCE_PASSWORD = 'Maintenance12345';
 
@@ -61,7 +63,8 @@ function isMaintenanceItem(item) {
 }
 
 function isEquipmentItem(item) {
-  return normalize(item.family) === normalize('Equipements professionnels');
+  const equipmentEmail = process.env.SEED_EQUIPMENT_EMAIL || DEFAULT_EQUIPMENT_EMAIL;
+  return normalize(item.supplier?.email || '') === normalize(equipmentEmail);
 }
 
 function productType(item) {
@@ -96,8 +99,7 @@ async function ensureMaintenanceFournisseur() {
     existing.status = 'ACTIVE';
     existing.companyName = 'ProTech Maintenance SARL';
     existing.phone = '06 55 44 33 22';
-    existing.address =
-      'Casablanca - Maintenance and repair of professional kitchen equipment';
+    existing.address = 'Casablanca - Maintenance and repair of professional kitchen equipment';
     await existing.save();
     return existing;
   }
@@ -111,6 +113,36 @@ async function ensureMaintenanceFournisseur() {
     companyName: 'ProTech Maintenance SARL',
     phone: '06 55 44 33 22',
     address: 'Casablanca - Maintenance and repair of professional kitchen equipment',
+  });
+}
+
+async function ensureEquipmentFournisseur() {
+  const email = process.env.SEED_EQUIPMENT_EMAIL || DEFAULT_EQUIPMENT_EMAIL;
+  const password = process.env.SEED_EQUIPMENT_PASSWORD || DEFAULT_EQUIPMENT_PASSWORD;
+
+  const existing = await User.findOne({ email });
+
+  if (existing) {
+    existing.name = 'Atlas Equipements Pro';
+    existing.role = 'FOURNISSEUR';
+    existing.status = 'ACTIVE';
+    existing.companyName = 'Atlas Equipements Pro';
+    existing.phone = '06 61 22 44 18';
+    existing.address = 'Zone industrielle Sidi Bernoussi, Casablanca';
+    existing.passwordHash = await User.hashPassword(password);
+    await existing.save();
+    return existing;
+  }
+
+  return User.create({
+    name: 'Atlas Equipements Pro',
+    email,
+    passwordHash: await User.hashPassword(password),
+    role: 'FOURNISSEUR',
+    status: 'ACTIVE',
+    companyName: 'Atlas Equipements Pro',
+    phone: '06 61 22 44 18',
+    address: 'Zone industrielle Sidi Bernoussi, Casablanca',
   });
 }
 
@@ -130,12 +162,17 @@ async function seedCatalogProducts() {
   }
 
   const maintenanceFournisseur = await ensureMaintenanceFournisseur();
+  const equipmentFournisseur = await ensureEquipmentFournisseur();
   const catalogProducts = readFrontendCatalog();
   let created = 0;
   let updated = 0;
 
   for (const item of catalogProducts) {
-    const owner = isMaintenanceItem(item) ? maintenanceFournisseur : fournisseur;
+    const owner = isMaintenanceItem(item)
+      ? maintenanceFournisseur
+      : isEquipmentItem(item)
+        ? equipmentFournisseur
+        : fournisseur;
     const payload = {
       name: item.name,
       slug: item.slug,
@@ -166,6 +203,7 @@ async function seedCatalogProducts() {
   console.log(
     `Catalog products linked to ${fournisseur.email}: ${created} created, ${updated} updated, ${catalogProducts.length} total.`,
   );
+  console.log(`Equipment fournisseur ready: ${equipmentFournisseur.email}`);
   console.log(`Maintenance fournisseur ready: ${maintenanceFournisseur.email}`);
   process.exit(0);
 }

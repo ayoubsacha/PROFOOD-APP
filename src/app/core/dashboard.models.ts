@@ -52,6 +52,7 @@ export interface AccountRequest {
   address?: string;
   message?: string;
   status: 'PENDING' | 'ACCEPTED' | 'REFUSED';
+  reviewedAt?: string;
   createdAt: string;
   updatedAt: string;
 }

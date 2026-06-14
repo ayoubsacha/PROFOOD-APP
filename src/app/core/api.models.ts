@@ -17,6 +17,8 @@ export interface AuthUser {
   phone?: string;
   address?: string;
   profileImage?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface LoginResult {
@@ -37,6 +39,8 @@ export interface BackendProduct {
   characteristics?: Record<string, unknown>;
   stockQuantity: number;
   status: 'ACTIVE' | 'DISABLED' | 'OUT_OF_STOCK';
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface CartProductRef {
@@ -120,7 +124,16 @@ export interface Conversation {
   _id: string;
   clientProId: string | ConversationParty;
   fournisseurId: string | ConversationParty;
+  productId?: string;
+  productName?: string;
+  subject?: string;
+  products?: {
+    productId?: string;
+    productName: string;
+  }[];
   lastMessage?: string;
+  lastMessageAt?: string;
+  unreadCount?: number;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -130,7 +143,30 @@ export interface Message {
   conversationId: string;
   senderId: string | ConversationParty;
   receiverId: string | ConversationParty;
+  productId?: string;
+  productName?: string;
+  subject?: string;
   content: string;
+  status?: 'sent' | 'read' | 'archived';
   isRead: boolean;
+  readAt?: string;
   createdAt: string;
+}
+
+export interface ConversationThread {
+  conversation: Conversation;
+  messages: Message[];
+}
+
+export interface NotificationItem {
+  _id: string;
+  userId: string;
+  type: 'MESSAGE_RECEIVED' | 'MESSAGE_REPLY' | 'ORDER_UPDATE';
+  title: string;
+  message: string;
+  targetRoute?: string;
+  conversationId?: string;
+  read: boolean;
+  createdAt: string;
+  updatedAt?: string;
 }

@@ -25,6 +25,11 @@ export interface ProductCatalogItem {
   description: string;
 }
 
+type ProductImageOverride = {
+  imageUrl: string;
+  imageAlt: string;
+};
+
 const ROOT_TUBER_PRODUCTS: ProductCatalogItem[] = [
   {
     slug: 'pomme-de-terre',
@@ -350,6 +355,12 @@ interface FoodFamilySeed {
   items: readonly (readonly [name: string, priceMad: number, unit?: string])[];
 }
 
+interface EquipmentFamilySeed {
+  section: string;
+  family: string;
+  items: readonly string[];
+}
+
 const GENERATED_SUPPLIERS: ProductSupplier[] = [
   {
     name: 'Profood Primeur',
@@ -402,10 +413,545 @@ const GENERATED_SUPPLIERS: ProductSupplier[] = [
 ];
 
 const EQUIPMENT_SUPPLIER: ProductSupplier = {
-  name: 'Profood Equipements Pro',
+  name: 'Atlas Équipements Pro',
   location: 'Zone industrielle Sidi Bernoussi, Casablanca',
   phone: '06 61 22 44 18',
-  email: 'equipements@profood.ma',
+  email: 'equipements@profood.com',
+};
+
+const EQUIPMENT_IMAGE_OVERRIDES: Record<string, ProductImageOverride> = {
+  'Bac de salage électrique': {
+    imageUrl: '/assets/equipment-products/bac-de-salage-electrique.png',
+    imageAlt: 'Bac de salage électrique professionnel en inox',
+  },
+  'Bain-marie électrique / gaz': {
+    imageUrl: '/assets/equipment-products/bain-marie-electrique-gaz.png',
+    imageAlt: 'Bain-marie professionnel inox électrique ou gaz',
+  },
+  'Barbecue & Grill portugais': {
+    imageUrl: '/assets/equipment-products/barbecue-grill-portugais.png',
+    imageAlt: 'Grill portugais professionnel en inox',
+  },
+  'Cuiseur à pâtes professionnel': {
+    imageUrl: '/assets/equipment-products/cuiseur-pates-professionnel.png',
+    imageAlt: 'Cuiseur à pâtes professionnel inox',
+  },
+  'Cuisinière professionnelle': {
+    imageUrl: '/assets/equipment-products/cuisiniere-professionnelle.png',
+    imageAlt: 'Cuisinière professionnelle inox pour cuisine CHR',
+  },
+  'Plancha professionnelle': {
+    imageUrl: '/assets/equipment-products/plancha-professionnelle.png',
+    imageAlt: 'Plancha professionnelle inox',
+  },
+  'Friteuse professionnelle': {
+    imageUrl: '/assets/equipment-products/friteuse-professionnelle.png',
+    imageAlt: 'Friteuse professionnelle inox double bac',
+  },
+  'Grill à pierre volcanique': {
+    imageUrl: '/assets/equipment-products/grill-pierre-volcanique.png',
+    imageAlt: 'Grill à pierre volcanique professionnel',
+  },
+  'Wok professionnel sur feu vif': {
+    imageUrl: '/assets/equipment-products/wok-professionnel-feu-vif.png',
+    imageAlt: 'Wok professionnel sur feu vif en inox',
+  },
+  'Chauffe-assiettes électrique': {
+    imageUrl: '/assets/equipment-products/chauffe-assiettes-electrique.png',
+    imageAlt: 'Chauffe-assiettes électrique professionnel',
+  },
+  'Four mixte': {
+    imageUrl: '/assets/equipment-products/four-mixte.png',
+    imageAlt: 'Four mixte professionnel inox',
+  },
+  'Four à convection': {
+    imageUrl: '/assets/equipment-products/four-convection.png',
+    imageAlt: 'Four à convection professionnel inox',
+  },
+  'Four à pizza professionnel': {
+    imageUrl: '/assets/equipment-products/four-pizza-professionnel.png',
+    imageAlt: 'Four à pizza professionnel double chambre',
+  },
+  'Four pâtisserie / boulangerie': {
+    imageUrl: '/assets/equipment-products/four-patisserie-boulangerie.png',
+    imageAlt: 'Four pâtisserie et boulangerie professionnel',
+  },
+  'Four convoyeur': {
+    imageUrl: '/assets/equipment-products/four-convoyeur.png',
+    imageAlt: 'Four convoyeur professionnel inox',
+  },
+  'Micro-ondes professionnel': {
+    imageUrl: '/assets/equipment-products/micro-ondes-professionnel.png',
+    imageAlt: 'Micro-ondes professionnel inox',
+  },
+  'Réfrigérateur armoire positive': {
+    imageUrl: '/assets/equipment-products/refrigerateur-armoire-positive.png',
+    imageAlt: 'Réfrigérateur armoire positive professionnel',
+  },
+  'Congélateur armoire négative': {
+    imageUrl: '/assets/equipment-products/congelateur-armoire-negative.png',
+    imageAlt: 'Congélateur armoire négative professionnel',
+  },
+  'Table réfrigérée': {
+    imageUrl: '/assets/equipment-products/table-refrigeree.png',
+    imageAlt: 'Table réfrigérée professionnelle inox',
+  },
+  'Chambre froide positive / négative': {
+    imageUrl: '/assets/equipment-products/chambre-froide-positive-negative.png',
+    imageAlt: 'Chambre froide professionnelle positive ou négative',
+  },
+  'Cellule de refroidissement rapide': {
+    imageUrl: '/assets/equipment-products/cellule-refroidissement-rapide.png',
+    imageAlt: 'Cellule de refroidissement rapide professionnelle',
+  },
+  'Vitrine réfrigérée de présentation': {
+    imageUrl: '/assets/equipment-products/vitrine-refrigeree-presentation.png',
+    imageAlt: 'Vitrine réfrigérée de présentation professionnelle',
+  },
+  'Kit réfrigérée': {
+    imageUrl: '/assets/equipment-products/kit-refrigeree.png',
+    imageAlt: 'Kit réfrigéré professionnel inox',
+  },
+  'Machine à glaçons': {
+    imageUrl: '/assets/equipment-products/machine-glacons.png',
+    imageAlt: 'Machine à glaçons professionnelle inox',
+  },
+  'Poche à douille + douilles inox': {
+    imageUrl: '/assets/equipment-products/poche-douille-douilles-inox.png',
+    imageAlt: 'Poche à douille avec douilles inox',
+  },
+  'Spatule coudée / palette pâtissière': {
+    imageUrl: '/assets/equipment-products/spatule-coudee-palette-patissiere.png',
+    imageAlt: 'Spatules coudées pâtissières inox',
+  },
+  'Râpe / zesteur pâtissier': {
+    imageUrl: '/assets/equipment-products/rape-zesteur-patissier.png',
+    imageAlt: 'Râpe zesteur pâtissier inox',
+  },
+  'Tamis / passoire fine pâtisserie': {
+    imageUrl: '/assets/equipment-products/tamis-passoire-fine-patisserie.png',
+    imageAlt: 'Tamis et passoire fine pâtisserie inox',
+  },
+  'Moules en silicone': {
+    imageUrl: '/assets/equipment-products/moules-en-silicone.png',
+    imageAlt: 'Moules en silicone pour pâtisserie',
+  },
+  'Plaque de cuisson perforée / pleine': {
+    imageUrl: '/assets/equipment-products/plaque-cuisson-perforee-pleine.png',
+    imageAlt: 'Plaques de cuisson perforée et pleine en inox',
+  },
+  'Rouleau à pâtisserie': {
+    imageUrl: '/assets/equipment-products/rouleau-patisserie.png',
+    imageAlt: 'Rouleau à pâtisserie en bois',
+  },
+  'Tapis de travail en silicone / marbre': {
+    imageUrl: '/assets/equipment-products/tapis-travail-silicone-marbre.png',
+    imageAlt: 'Tapis de travail silicone et plaque marbre pâtissière',
+  },
+  'Moules à bûche': {
+    imageUrl: '/assets/equipment-products/moules-buche.png',
+    imageAlt: 'Moules à bûche inox',
+  },
+  'Moules à entremets / cercles pâtissiers': {
+    imageUrl: '/assets/equipment-products/moules-entremets-cercles-patissiers.png',
+    imageAlt: 'Cercles pâtissiers inox pour entremets',
+  },
+  'Moules & cercles professionnels': {
+    imageUrl: '/assets/equipment-products/moules-cercles-professionnels.png',
+    imageAlt: 'Moules et cercles professionnels inox',
+  },
+  'Moules à gâteaux ronds / carrés': {
+    imageUrl: '/assets/equipment-products/moules-gateaux-ronds-carres.png',
+    imageAlt: 'Moules à gâteaux ronds et carrés',
+  },
+  'Moules à tarte / tartelettes': {
+    imageUrl: '/assets/equipment-products/moules-tarte-tartelettes.png',
+    imageAlt: 'Moules à tarte et tartelettes',
+  },
+  'Moules à muffins / cupcakes': {
+    imageUrl: '/assets/equipment-products/moules-muffins-cupcakes.png',
+    imageAlt: 'Moules à muffins et cupcakes',
+  },
+  'Batteur-mélangeur sur socle': {
+    imageUrl: '/assets/equipment-products/batteur-melangeur-sur-socle.png',
+    imageAlt: 'Batteur-mélangeur sur socle professionnel',
+  },
+  'Batteur sur socle planétaire': {
+    imageUrl: '/assets/equipment-products/batteur-socle-planetaire.png',
+    imageAlt: 'Batteur sur socle planétaire professionnel',
+  },
+  'Robot pâtissier multifonction': {
+    imageUrl: '/assets/equipment-products/robot-patissier-multifonction.png',
+    imageAlt: 'Robot pâtissier multifonction professionnel',
+  },
+  'Trempeuse à chocolat / tempéreuse': {
+    imageUrl: '/assets/equipment-products/trempeuse-chocolat-tempereuse.png',
+    imageAlt: 'Tempéreuse à chocolat professionnelle inox',
+  },
+  'Diviseuse-bouleuse': {
+    imageUrl: '/assets/equipment-products/diviseuse-bouleuse.png',
+    imageAlt: 'Diviseuse-bouleuse professionnelle',
+  },
+  'Chambre de pousse / fermentation': {
+    imageUrl: '/assets/equipment-products/chambre-pousse-fermentation.png',
+    imageAlt: 'Chambre de pousse et fermentation professionnelle',
+  },
+  'Coupe-légumes / robot-coupe': {
+    imageUrl: '/assets/equipment-products/coupe-legumes-robot-coupe.png',
+    imageAlt: 'Coupe-légumes robot-coupe professionnel',
+  },
+  'Hachoir à viande professionnel': {
+    imageUrl: '/assets/equipment-products/hachoir-viande-professionnel.png',
+    imageAlt: 'Hachoir à viande professionnel inox',
+  },
+  'Trancheuse professionnelle': {
+    imageUrl: '/assets/equipment-products/trancheuse-professionnelle.png',
+    imageAlt: 'Trancheuse professionnelle inox',
+  },
+  'Mixeur plongeant professionnel': {
+    imageUrl: '/assets/equipment-products/mixeur-plongeant-professionnel.png',
+    imageAlt: 'Mixeur plongeant professionnel',
+  },
+  'Batteur-mélangeur pâtisserie': {
+    imageUrl: '/assets/equipment-products/batteur-melangeur-patisserie.png',
+    imageAlt: 'Batteur-mélangeur pâtisserie professionnel',
+  },
+  'Trancheuse à pain': {
+    imageUrl: '/assets/equipment-products/trancheuse-pain.png',
+    imageAlt: 'Trancheuse à pain professionnelle',
+  },
+  'Scie à os électrique': {
+    imageUrl: '/assets/equipment-products/scie-os-electrique.png',
+    imageAlt: 'Scie à os électrique professionnelle',
+  },
+  'Épluche-légumes': {
+    imageUrl: '/assets/equipment-products/epluche-legumes.png',
+    imageAlt: 'Épluche-légumes professionnel inox',
+  },
+  'Pétrin spiral professionnel': {
+    imageUrl: '/assets/equipment-products/petrin-spiral-professionnel.png',
+    imageAlt: 'Pétrin spiral professionnel',
+  },
+  'Laminoir / façonneuse à baguettes': {
+    imageUrl: '/assets/equipment-products/laminoir-faconneuse-baguettes.png',
+    imageAlt: 'Laminoir façonneuse à baguettes professionnel',
+  },
+  'Balance de pr\u00e9cision p\u00e2tisserie': {
+    imageUrl: '/assets/equipment-products/balance-de-precision-patisserie.png',
+    imageAlt: 'Balance de precision patisserie en inox',
+  },
+  'Chalumeau de cuisine': {
+    imageUrl: '/assets/equipment-products/chalumeau-de-cuisine.png',
+    imageAlt: 'Chalumeau de cuisine professionnel',
+  },
+  'Laminoir / sheeter p\u00e2tissier': {
+    imageUrl: '/assets/equipment-products/laminoir-sheeter-patissier.png',
+    imageAlt: 'Laminoir sheeter patissier professionnel',
+  },
+  'Fonceuse \u00e0 tartes': {
+    imageUrl: '/assets/equipment-products/fonceuse-a-tartes.png',
+    imageAlt: 'Fonceuse a tartes professionnelle',
+  },
+  'D\u00e9poseuse / po\u00ealonneuse chocolat': {
+    imageUrl: '/assets/equipment-products/deposeuse-poelonneuse-chocolat.png',
+    imageAlt: 'Deposeuse poelonneuse chocolat professionnelle',
+  },
+  'Guitare p\u00e2tissi\u00e8re': {
+    imageUrl: '/assets/equipment-products/guitare-patissiere.png',
+    imageAlt: 'Guitare patissiere inox',
+  },
+  'Corne / raclette p\u00e2tissi\u00e8re': {
+    imageUrl: '/assets/equipment-products/corne-raclette-patissiere.png',
+    imageAlt: 'Cornes et raclettes patissieres inox',
+  },
+  'Emporte-pi\u00e8ces': {
+    imageUrl: '/assets/equipment-products/emporte-pieces.png',
+    imageAlt: 'Set emporte-pieces inox',
+  },
+  'Saupoudreur \u00e0 sucre glace / cacao': {
+    imageUrl: '/assets/equipment-products/saupoudreur-a-sucre-glace-cacao.png',
+    imageAlt: 'Saupoudreur a sucre glace et cacao inox',
+  },
+  'Cul-de-poule inox': {
+    imageUrl: '/assets/equipment-products/cul-de-poule-inox.png',
+    imageAlt: 'Cul-de-poule inox professionnel',
+  },
+  'Grille-panini / toaster professionnel': {
+    imageUrl: '/assets/equipment-products/grille-panini-toaster-professionnel.png',
+    imageAlt: 'Grille-panini toaster professionnel',
+  },
+  'Lampe chauffante infrarouge de maintien': {
+    imageUrl: '/assets/equipment-products/lampe-chauffante-infrarouge-de-maintien.png',
+    imageAlt: 'Lampe chauffante infrarouge de maintien',
+  },
+  'Distributeur de boissons chaudes': {
+    imageUrl: '/assets/equipment-products/distributeur-de-boissons-chaudes.png',
+    imageAlt: 'Distributeur de boissons chaudes professionnel',
+  },
+  'Table de travail inox': {
+    imageUrl: '/assets/equipment-products/table-de-travail-inox.png',
+    imageAlt: 'Table de travail inox professionnelle',
+  },
+  'Table de d\u00e9barrassage / plonge': {
+    imageUrl: '/assets/equipment-products/table-de-debarrassage-plonge.png',
+    imageAlt: 'Table de debarrassage plonge inox',
+  },
+  '\u00c9tag\u00e8re murale / \u00e9tag\u00e8re \u00e0 clayettes': {
+    imageUrl: '/assets/equipment-products/etagere-murale-etagere-a-clayettes.png',
+    imageAlt: 'Etagere murale a clayettes inox',
+  },
+  'Chariot GN / chariot p\u00e2tissier': {
+    imageUrl: '/assets/equipment-products/chariot-gn-chariot-patissier.png',
+    imageAlt: 'Chariot GN patissier inox',
+  },
+  'Placard bas / meuble bas cuisine': {
+    imageUrl: '/assets/equipment-products/placard-bas-meuble-bas-cuisine.png',
+    imageAlt: 'Placard bas cuisine inox',
+  },
+  "Hotte d'aspiration professionnelle": {
+    imageUrl: '/assets/equipment-products/hotte-d-aspiration-professionnelle.png',
+    imageAlt: "Hotte d'aspiration professionnelle inox",
+  },
+  'Table de restaurant': {
+    imageUrl: '/assets/equipment-products/table-de-restaurant.png',
+    imageAlt: 'Table de restaurant',
+  },
+  'Chaise et tabouret de restaurant': {
+    imageUrl: '/assets/equipment-products/chaise-et-tabouret-de-restaurant.png',
+    imageAlt: 'Chaise et tabouret de restaurant',
+  },
+  'Comptoir de bar / de service': {
+    imageUrl: '/assets/equipment-products/comptoir-de-bar-de-service.png',
+    imageAlt: 'Comptoir de bar et de service',
+  },
+  'Pr\u00e9sentoir vitrine de comptoir': {
+    imageUrl: '/assets/equipment-products/presentoir-vitrine-de-comptoir.png',
+    imageAlt: 'Presentoir vitrine de comptoir',
+  },
+  'Rayonnage de stockage': {
+    imageUrl: '/assets/equipment-products/rayonnage-de-stockage.png',
+    imageAlt: 'Rayonnage de stockage professionnel',
+  },
+  'Armoire de stockage ferm\u00e9e': {
+    imageUrl: '/assets/equipment-products/armoire-de-stockage-fermee.png',
+    imageAlt: 'Armoire de stockage fermee',
+  },
+  'Bac de stockage alimentaire': {
+    imageUrl: '/assets/equipment-products/bac-de-stockage-alimentaire.png',
+    imageAlt: 'Bac de stockage alimentaire',
+  },
+  'Assiettes': {
+    imageUrl: '/assets/equipment-products/assiettes.png',
+    imageAlt: 'Collection assiettes restaurant',
+  },
+  'Assiette plate ronde standard': {
+    imageUrl: '/assets/equipment-products/assiette-plate-ronde-standard.png',
+    imageAlt: 'Assiette plate ronde standard',
+  },
+  'Assiette creuse / soupe': {
+    imageUrl: '/assets/equipment-products/assiette-creuse-soupe.png',
+    imageAlt: 'Assiette creuse soupe',
+  },
+  'Assiette \u00e0 dessert': {
+    imageUrl: '/assets/equipment-products/assiette-a-dessert.png',
+    imageAlt: 'Assiette a dessert',
+  },
+  'Assiette \u00e0 pain / beurre': {
+    imageUrl: '/assets/equipment-products/assiette-a-pain-beurre.png',
+    imageAlt: 'Assiette a pain ou beurre',
+  },
+  'Assiette de pr\u00e9sentation': {
+    imageUrl: '/assets/equipment-products/assiette-de-presentation.png',
+    imageAlt: 'Assiette de presentation',
+  },
+  'Assiette \u00e0 pizza ronde': {
+    imageUrl: '/assets/equipment-products/assiette-a-pizza-ronde.png',
+    imageAlt: 'Assiette a pizza ronde',
+  },
+  'Assiette ardoise / en pierre': {
+    imageUrl: '/assets/equipment-products/assiette-ardoise-en-pierre.png',
+    imageAlt: 'Assiette ardoise en pierre',
+  },
+  'Assiette rectangulaire / ardoise allong\u00e9e': {
+    imageUrl: '/assets/equipment-products/assiette-rectangulaire-ardoise-allongee.png',
+    imageAlt: 'Assiette rectangulaire ardoise allongee',
+  },
+  'Assiette tapas / d\u00e9gustation': {
+    imageUrl: '/assets/equipment-products/assiette-tapas-degustation.png',
+    imageAlt: 'Assiette tapas degustation',
+  },
+  'Assiette ovale de service': {
+    imageUrl: '/assets/equipment-products/assiette-ovale-de-service.png',
+    imageAlt: 'Assiette ovale de service',
+  },
+  'Bols, ramequins, cocottes': {
+    imageUrl: '/assets/equipment-products/bols-ramequins-cocottes.png',
+    imageAlt: 'Bols ramequins et cocottes',
+  },
+  'Coupelle / bol \u00e0 sauce': {
+    imageUrl: '/assets/equipment-products/coupelle-bol-a-sauce.png',
+    imageAlt: 'Coupelle bol a sauce',
+  },
+  'Bol \u00e0 soupe / bouillon': {
+    imageUrl: '/assets/equipment-products/bol-a-soupe-bouillon.png',
+    imageAlt: 'Bol a soupe bouillon',
+  },
+  'Bol \u00e0 c\u00e9r\u00e9ales / bol cor\u00e9en': {
+    imageUrl: '/assets/equipment-products/bol-a-cereales-bol-coreen.png',
+    imageAlt: 'Bol a cereales bol coreen',
+  },
+  'Mug / tasse \u00e0 caf\u00e9 / th\u00e9': {
+    imageUrl: '/assets/equipment-products/mug-tasse-a-cafe-the.png',
+    imageAlt: 'Mug tasse a cafe ou the',
+  },
+  'Tasse \u00e0 espresso + soucoupe': {
+    imageUrl: '/assets/equipment-products/tasse-a-espresso-soucoupe.png',
+    imageAlt: 'Tasse a espresso avec soucoupe',
+  },
+  'Ramequin individuel': {
+    imageUrl: '/assets/equipment-products/ramequin-individuel.png',
+    imageAlt: 'Ramequin individuel',
+  },
+  'Terrine / cocotte mini en fonte': {
+    imageUrl: '/assets/equipment-products/terrine-cocotte-mini-en-fonte.png',
+    imageAlt: 'Terrine cocotte mini en fonte',
+  },
+  'Verrines / petits pots service': {
+    imageUrl: '/assets/equipment-products/verrines-petits-pots-service.png',
+    imageAlt: 'Verrines et petits pots de service',
+  },
+  'Planche \u00e0 d\u00e9couper de pr\u00e9sentation': {
+    imageUrl: '/assets/equipment-products/planche-a-decouper-de-presentation.png',
+    imageAlt: 'Planche a decouper de presentation',
+  },
+  'Saladiers & plats de service': {
+    imageUrl: '/assets/equipment-products/saladiers-plats-de-service.png',
+    imageAlt: 'Saladiers et plats de service',
+  },
+  'Fourchettes, couteaux, cuill\u00e8res': {
+    imageUrl: '/assets/equipment-products/fourchettes-couteaux-cuilleres.png',
+    imageAlt: 'Set fourchettes couteaux et cuilleres',
+  },
+  'Couteau de table standard': {
+    imageUrl: '/assets/equipment-products/couteau-de-table-standard.png',
+    imageAlt: 'Couteau de table standard',
+  },
+  'Fourchette de table': {
+    imageUrl: '/assets/equipment-products/fourchette-de-table.png',
+    imageAlt: 'Fourchette de table',
+  },
+  'Cuill\u00e8re \u00e0 soupe / dessert': {
+    imageUrl: '/assets/equipment-products/cuillere-a-soupe-dessert.png',
+    imageAlt: 'Cuillere a soupe ou dessert',
+  },
+  'Cuill\u00e8re \u00e0 caf\u00e9 / moka': {
+    imageUrl: '/assets/equipment-products/cuillere-a-cafe-moka.png',
+    imageAlt: 'Cuillere a cafe moka',
+  },
+  'Couteau \u00e0 beurre': {
+    imageUrl: '/assets/equipment-products/couteau-a-beurre.png',
+    imageAlt: 'Couteau a beurre',
+  },
+  'Fourchette \u00e0 poisson': {
+    imageUrl: '/assets/equipment-products/fourchette-a-poisson.png',
+    imageAlt: 'Fourchette a poisson',
+  },
+  'Couteau \u00e0 poisson': {
+    imageUrl: '/assets/equipment-products/couteau-a-poisson.png',
+    imageAlt: 'Couteau a poisson',
+  },
+  'Couteau \u00e0 steak': {
+    imageUrl: '/assets/equipment-products/couteau-a-steak.png',
+    imageAlt: 'Couteau a steak',
+  },
+  'Cuill\u00e8re de service': {
+    imageUrl: '/assets/equipment-products/cuillere-de-service.png',
+    imageAlt: 'Cuillere de service',
+  },
+  'Pince de service inox': {
+    imageUrl: '/assets/equipment-products/pince-de-service-inox.png',
+    imageAlt: 'Pince de service inox',
+  },
+  'Louche de service': {
+    imageUrl: '/assets/equipment-products/louche-de-service.png',
+    imageAlt: 'Louche de service',
+  },
+  'Spatule / truelle de service': {
+    imageUrl: '/assets/equipment-products/spatule-truelle-de-service.png',
+    imageAlt: 'Spatule truelle de service',
+  },
+  'Pelle \u00e0 tarte / g\u00e2teau': {
+    imageUrl: '/assets/equipment-products/pelle-a-tarte-gateau.png',
+    imageAlt: 'Pelle a tarte ou gateau',
+  },
+  'Couteaux de d\u00e9coupe / office': {
+    imageUrl: '/assets/equipment-products/couteaux-de-decoupe-office.png',
+    imageAlt: 'Couteaux de decoupe et office',
+  },
+  'Collection de verres': {
+    imageUrl: '/assets/equipment-products/collection-de-verres.png',
+    imageAlt: 'Collection de verres',
+  },
+  'Verre \u00e0 eau / highball': {
+    imageUrl: '/assets/equipment-products/verre-a-eau-highball.png',
+    imageAlt: 'Verre a eau highball',
+  },
+  'Verre ballon': {
+    imageUrl: '/assets/equipment-products/verre-ballon.png',
+    imageAlt: 'Verre ballon',
+  },
+  'Verre tulipe': {
+    imageUrl: '/assets/equipment-products/verre-tulipe.png',
+    imageAlt: 'Verre tulipe',
+  },
+  'Fl\u00fbte sur pied': {
+    imageUrl: '/assets/equipment-products/flute-sur-pied.png',
+    imageAlt: 'Flute sur pied',
+  },
+  'Verre \u00e0 dessert': {
+    imageUrl: '/assets/equipment-products/verre-a-dessert.png',
+    imageAlt: 'Verre a dessert',
+  },
+  'Verre \u00e0 cocktail / martini': {
+    imageUrl: '/assets/equipment-products/verre-a-cocktail-martini.png',
+    imageAlt: 'Verre a cocktail martini',
+  },
+  'Verre Old Fashioned': {
+    imageUrl: '/assets/equipment-products/verre-old-fashioned.png',
+    imageAlt: 'Verre Old Fashioned',
+  },
+  'Petit verre': {
+    imageUrl: '/assets/equipment-products/petit-verre.png',
+    imageAlt: 'Petit verre',
+  },
+  'Verre type pinte': {
+    imageUrl: '/assets/equipment-products/verre-type-pinte.png',
+    imageAlt: 'Verre type pinte',
+  },
+  "Verre \u00e0 jus d'orange / soft": {
+    imageUrl: '/assets/equipment-products/verre-a-jus-d-orange-soft.png',
+    imageAlt: "Verre a jus d'orange ou soft",
+  },
+  'Verre \u00e0 mojito / cocktail long': {
+    imageUrl: '/assets/equipment-products/verre-a-mojito-cocktail-long.png',
+    imageAlt: 'Verre a mojito cocktail long',
+  },
+  'Verre \u00e0 digestif / cognac': {
+    imageUrl: '/assets/equipment-products/verre-a-digestif-cognac.png',
+    imageAlt: 'Verre a digestif cognac',
+  },
+  'Carafes & d\u00e9canteurs': {
+    imageUrl: '/assets/equipment-products/carafes-et-decanteurs.png',
+    imageAlt: 'Carafes et decanteurs',
+  },
+  'Carafe \u00e0 eau': {
+    imageUrl: '/assets/equipment-products/carafe-a-eau.png',
+    imageAlt: 'Carafe a eau',
+  },
+  'Seau \u00e0 glace + pince': {
+    imageUrl: '/assets/equipment-products/seau-a-glace-pince.png',
+    imageAlt: 'Seau a glace avec pince',
+  },
 };
 
 const PROTECH_MAINTENANCE_SUPPLIER: ProductSupplier = {
@@ -1007,7 +1553,7 @@ function catalogProductPhoto(
   };
 }
 
-const PRODUCT_IMAGE_OVERRIDES: Record<string, { imageUrl: string; imageAlt: string }> = {
+const PRODUCT_IMAGE_OVERRIDES: Record<string, ProductImageOverride> = {
   'Oignon jaune': {
     imageUrl: '/assets/product-oignon-jaune.png',
     imageAlt: 'Oignons jaunes frais',
@@ -1281,7 +1827,7 @@ const PROFESSIONAL_EQUIPMENT_PRODUCTS: ProductCatalogItem[] = [
     slug: 'four-mixte-professionnel',
     name: 'Four mixte professionnel',
     family: 'Équipements professionnels',
-    imageUrl: '/assets/group-cooking.png',
+    imageUrl: '/assets/equipment-products/four-mixte.png',
     imageAlt: 'Four mixte professionnel pour cuisine CHR',
     priceMad: 24500,
     unit: 'unite',
@@ -1304,7 +1850,7 @@ const PROFESSIONAL_EQUIPMENT_PRODUCTS: ProductCatalogItem[] = [
     slug: 'chambre-froide-positive',
     name: 'Chambre froide positive',
     family: 'Équipements professionnels',
-    imageUrl: '/assets/group-cold.png',
+    imageUrl: '/assets/equipment-products/chambre-froide-positive-negative.png',
     imageAlt: 'Chambre froide positive professionnelle',
     priceMad: 38500,
     unit: 'unite',
@@ -1350,7 +1896,7 @@ const PROFESSIONAL_EQUIPMENT_PRODUCTS: ProductCatalogItem[] = [
     slug: 'batteur-melangeur-20-l',
     name: 'Batteur melangeur 20 L',
     family: 'Équipements professionnels',
-    imageUrl: '/assets/group-cooking.png',
+    imageUrl: '/assets/equipment-products/batteur-melangeur-sur-socle.png',
     imageAlt: 'Batteur melangeur professionnel 20 litres',
     priceMad: 9200,
     unit: 'unite',
@@ -1373,7 +1919,7 @@ const PROFESSIONAL_EQUIPMENT_PRODUCTS: ProductCatalogItem[] = [
     slug: 'vitrine-refrigeree-service',
     name: 'Vitrine refrigeree service',
     family: 'Équipements professionnels',
-    imageUrl: '/assets/group-cold.png',
+    imageUrl: '/assets/equipment-products/vitrine-refrigeree-presentation.png',
     imageAlt: 'Vitrine refrigeree professionnelle',
     priceMad: 13200,
     unit: 'unite',
@@ -1394,13 +1940,390 @@ const PROFESSIONAL_EQUIPMENT_PRODUCTS: ProductCatalogItem[] = [
   },
 ];
 
+const EQUIPMENT_MENU_THEME: GeneratedTheme = {
+  colors: ['#f4f5f7', '#9aa1ad', '#1f2937'],
+  unit: 'unite',
+  minimumQuantity: 1,
+  maximumQuantity: 20,
+  quantityStep: 1,
+  packaging: 'Equipement pro',
+  shortTrait: 'Sur devis',
+  quality: 'Selection CHR avec installation et suivi fournisseur',
+};
+
+const EQUIPMENT_MENU_FAMILY_SEEDS: EquipmentFamilySeed[] = [
+  {
+    section: 'Équipements techniques de production',
+    family: 'Cuisson',
+    items: [
+      'Bac de salage électrique',
+      'Bain-marie électrique / gaz',
+      'Barbecue & Grill portugais',
+      'Cuiseur à pâtes professionnel',
+      'Cuisinière professionnelle',
+      'Plancha professionnelle',
+      'Friteuse professionnelle',
+      'Grill à pierre volcanique',
+      'Wok professionnel sur feu vif',
+      'Chauffe-assiettes électrique',
+      'Buffet chauffant',
+      'Salamandre / grill de finition',
+    ],
+  },
+  {
+    section: 'Équipements techniques de production',
+    family: 'Fours',
+    items: [
+      'Four mixte',
+      'Four à convection',
+      'Four à pizza professionnel',
+      'Four pâtisserie / boulangerie',
+      'Four convoyeur',
+      'Micro-ondes professionnel',
+    ],
+  },
+  {
+    section: 'Équipements techniques de production',
+    family: 'Froid & conservation',
+    items: [
+      'Réfrigérateur armoire positive',
+      'Congélateur armoire négative',
+      'Table réfrigérée',
+      'Chambre froide positive / négative',
+      'Cellule de refroidissement rapide',
+      'Vitrine réfrigérée de présentation',
+      'Kit réfrigérée',
+      'Machine à glaçons',
+    ],
+  },
+  {
+    section: 'Équipements techniques de production',
+    family: 'Préparation alimentaire',
+    items: [
+      'Coupe-légumes / robot-coupe',
+      'Hachoir à viande professionnel',
+      'Trancheuse professionnelle',
+      'Mixeur plongeant professionnel',
+      'Batteur-mélangeur sur socle',
+      'Trancheuse à pain',
+      'Scie à os électrique',
+      'Épluche-légumes',
+    ],
+  },
+  {
+    section: 'Équipements techniques de production',
+    family: 'Boulangerie',
+    items: [
+      'Pétrin spiral professionnel',
+      'Laminoir / façonneuse à baguettes',
+      'Diviseuse-bouleuse',
+      'Chambre de pousse / fermentation',
+    ],
+  },
+  {
+    section: 'Équipements techniques de production',
+    family: 'Pâtisserie',
+    items: [
+      'Batteur-mélangeur pâtisserie',
+      'Batteur sur socle planétaire',
+      'Robot pâtissier multifonction',
+      'Trempeuse à chocolat / tempéreuse',
+      'Moules & cercles professionnels',
+      'Moules à gâteaux ronds / carrés',
+      'Moules à tarte / tartelettes',
+      'Moules à muffins / cupcakes',
+      'Moules à bûche',
+      'Moules à entremets / cercles pâtissiers',
+      'Moules en silicone',
+      'Plaque de cuisson perforée / pleine',
+      'Rouleau à pâtisserie',
+      'Tapis de travail en silicone / marbre',
+      'Poche à douille + douilles inox',
+      'Spatule coudée / palette pâtissière',
+      'Râpe / zesteur pâtissier',
+      'Tamis / passoire fine pâtisserie',
+      'Balance de précision pâtisserie',
+      'Thermomètre de cuisson sucre / chocolat',
+      'Chalumeau de cuisine',
+      'Laminoir / sheeter pâtissier',
+      'Fonceuse à tartes',
+      'Déposeuse / poêlonneuse chocolat',
+      'Guitare pâtissière',
+      'Corne / raclette pâtissière',
+      'Emporte-pièces',
+      'Saupoudreur à sucre glace / cacao',
+      'Cul-de-poule inox',
+    ],
+  },
+  {
+    section: 'Équipements techniques de production',
+    family: 'Snack / fast-food',
+    items: [
+      'Grille-panini / toaster professionnel',
+      'Lampe chauffante infrarouge de maintien',
+      'Distributeur de boissons chaudes',
+    ],
+  },
+  {
+    section: 'Mobilier & aménagement',
+    family: 'Mobilier cuisine',
+    items: [
+      'Table de travail inox',
+      'Table de débarrassage / plonge',
+      'Étagère murale / étagère à clayettes',
+      'Chariot GN / chariot pâtissier',
+      'Placard bas / meuble bas cuisine',
+      "Hotte d'aspiration professionnelle",
+    ],
+  },
+  {
+    section: 'Mobilier & aménagement',
+    family: 'Mobilier salle',
+    items: [
+      'Table de restaurant',
+      'Chaise et tabouret de restaurant',
+      'Comptoir de bar / de service',
+      'Présentoir vitrine de comptoir',
+    ],
+  },
+  {
+    section: 'Mobilier & aménagement',
+    family: 'Stockage',
+    items: ['Rayonnage de stockage', 'Armoire de stockage fermée', 'Bac de stockage alimentaire'],
+  },
+  {
+    section: 'Service & présentation',
+    family: 'Vaisselle',
+    items: [
+      'Assiettes',
+      'Assiette plate ronde standard',
+      'Assiette creuse / soupe',
+      'Assiette à dessert',
+      'Assiette à pain / beurre',
+      'Assiette de présentation',
+      'Assiette à pizza ronde',
+      'Assiette ardoise / en pierre',
+      'Assiette rectangulaire / ardoise allongée',
+      'Assiette tapas / dégustation',
+      'Assiette ovale de service',
+      'Bols, ramequins, cocottes',
+      'Coupelle / bol à sauce',
+      'Bol à soupe / bouillon',
+      'Bol à céréales / bol coréen',
+      'Mug / tasse à café / thé',
+      'Tasse à espresso + soucoupe',
+      'Ramequin individuel',
+      'Terrine / cocotte mini en fonte',
+      'Verrines / petits pots service',
+      'Planche à découper de présentation',
+      'Saladiers & plats de service',
+    ],
+  },
+  {
+    section: 'Service & présentation',
+    family: 'Couverts',
+    items: [
+      'Fourchettes, couteaux, cuillères',
+      'Couteau de table standard',
+      'Fourchette de table',
+      'Cuillère à soupe / dessert',
+      'Cuillère à café / moka',
+      'Couteau à beurre',
+      'Fourchette à poisson',
+      'Couteau à poisson',
+      'Couteau à steak',
+      'Cuillère de service',
+      'Pince de service inox',
+      'Louche de service',
+      'Spatule / truelle de service',
+      'Pelle à tarte / gâteau',
+      'Couteaux de découpe / office',
+    ],
+  },
+  {
+    section: 'Service & présentation',
+    family: 'Verrerie',
+    items: [
+      'Collection de verres',
+      'Verre à eau / highball',
+      'Verre ballon',
+      'Verre tulipe',
+      'Flûte sur pied',
+      'Verre à dessert',
+      'Verre à cocktail / martini',
+      'Verre Old Fashioned',
+      'Petit verre',
+      'Verre type pinte',
+      "Verre à jus d'orange / soft",
+      'Verre à mojito / cocktail long',
+      'Verre à digestif / cognac',
+      'Carafes & décanteurs',
+      'Carafe à eau',
+      'Seau à glace + pince',
+    ],
+  },
+  {
+    section: 'Service & présentation',
+    family: 'Présentation & service',
+    items: [
+      'Plateau de service',
+      'Cloche chauffante de service',
+      'Support buffet',
+      'Poubelle / seau de table / déchet',
+    ],
+  },
+  {
+    section: 'Emballage & vente à emporter',
+    family: 'Emballage alimentaire',
+    items: [
+      'Boîtes à emporter',
+      'Barquettes alimentaires',
+      'Sacs kraft et sacs en papier',
+      'Film étirable / papier sulfurisé',
+    ],
+  },
+  {
+    section: 'Emballage & vente à emporter',
+    family: 'Packaging personnalisé',
+    items: ['Boîtes avec logo', 'Stickers & étiquettes de marque'],
+  },
+  {
+    section: 'Emballage & vente à emporter',
+    family: 'Livraison',
+    items: ['Sacs isothermes de livraison', 'Boîtes thermiques'],
+  },
+  {
+    section: 'Hygiène & sécurité',
+    family: 'Lavage',
+    items: [
+      'Lave-vaisselle à capot professionnel',
+      'Lave-vaisselle à tunnel',
+      'Plonge simple / double bac',
+      'Distributeur savon / désinfectant mural',
+    ],
+  },
+  {
+    section: 'Hygiène & sécurité',
+    family: 'Sécurité',
+    items: [
+      'Extincteur cuisine',
+      'Système de ventilation / extraction',
+      'Tapis antidérapants de cuisine',
+      'Boîte de premiers secours',
+    ],
+  },
+  {
+    section: 'Hygiène & sécurité',
+    family: 'Normes haccp',
+    items: [
+      'Thermomètre sonde HACCP',
+      'Étiquettes HACCP & fiches de traçabilité',
+      'Planches à découper codées',
+    ],
+  },
+  {
+    section: 'Tenue & ressources humaines',
+    family: 'Tenue de travail',
+    items: [
+      'Veste de chef professionnelle',
+      'Tablier de cuisine / tablier boucher',
+      'Toque et calot de cuisine',
+      'Pantalon de cuisine',
+    ],
+  },
+  {
+    section: 'Tenue & ressources humaines',
+    family: 'Protection',
+    items: [
+      'Chaussures de sécurité cuisine',
+      'Gants résistants chaleur / coupure',
+      'Gants jetables alimentaires',
+    ],
+  },
+  {
+    section: 'Technologie & gestion',
+    family: 'Systèmes de caisse',
+    items: [
+      'Terminal POS tactile',
+      'Imprimante de tickets / tickets cuisine',
+      'Terminal de paiement',
+      'Tiroir-caisse électronique',
+    ],
+  },
+  {
+    section: 'Technologie & gestion',
+    family: 'Commande & réservation',
+    items: ['Borne de commande tactile', 'QR code menu numérique'],
+  },
+  {
+    section: 'Matériel traditionnel marocain',
+    family: 'Ustensiles de cuisson',
+    items: [
+      'Tajine grand format',
+      'Tajine moyen format',
+      'Mini tajine individuel',
+      'Tajine en fonte émaillée',
+      'Couscoussier traditionnel',
+      'Couscoussier inox professionnel',
+      'Marmite tangia',
+      'Qidra / marmite haute en cuivre',
+      'Kskas en terre cuite',
+      'Poêle plate marocaine',
+      'Plat creux cuivre',
+    ],
+  },
+  {
+    section: 'Matériel traditionnel marocain',
+    family: 'Service & présentation traditionnel',
+    items: [
+      'Plateau de service en cuivre martelé',
+      'Plateau en bois sculpté',
+      'Théière marocaine',
+      'Verre à thé marocain',
+      'Plateau en laiton gravé',
+      'Bol à harira',
+      'Tajine de présentation',
+      'Assiette en zellige / céramique de Fès',
+      'Couffin tressé de service',
+      'Grand plat en bois',
+      "Coupelle à amlou / miel / huile d'argan",
+    ],
+  },
+  {
+    section: 'Matériel traditionnel marocain',
+    family: 'Préparation & transformation',
+    items: [
+      'Mortier en pierre',
+      'Mortier en laiton',
+      'Meule à argane',
+      'Tamis à semoule',
+      'Chalumeau à charbon',
+      'Grill à charbon traditionnel',
+      'Moule à chebakia',
+      'Moule à kaab el ghazal',
+      'Passoire à épices en cuivre',
+    ],
+  },
+];
+
+export const EQUIPMENT_MENU_FAMILY_NAMES: string[] = EQUIPMENT_MENU_FAMILY_SEEDS.map(
+  (familySeed) => familySeed.family,
+);
+
+const GENERATED_EQUIPMENT_MENU_PRODUCTS: ProductCatalogItem[] = EQUIPMENT_MENU_FAMILY_SEEDS.flatMap(
+  (familySeed, familyIndex) =>
+    familySeed.items.map((name, itemIndex) =>
+      createEquipmentMenuProduct(familySeed, name, familyIndex, itemIndex),
+    ),
+);
+
 // TODO: Split maintenance into a dedicated Service model when the backend supports service entities.
 const MAINTENANCE_SERVICE_PRODUCTS: ProductCatalogItem[] = [
   {
     slug: 'maintenance-four-professionnel',
     name: 'Maintenance four professionnel',
     family: 'Maintenance',
-    imageUrl: '/assets/group-maintenance.png',
+    imageUrl: '/assets/service-products/maintenance-four-professionnel.png',
     imageAlt: 'Technicien intervenant sur un four professionnel',
     priceMad: 300,
     unit: 'intervention',
@@ -1423,7 +2346,7 @@ const MAINTENANCE_SERVICE_PRODUCTS: ProductCatalogItem[] = [
     slug: 'reparation-chambre-froide',
     name: 'Reparation chambre froide',
     family: 'Maintenance',
-    imageUrl: '/assets/group-cold.png',
+    imageUrl: '/assets/service-products/maintenance-froid-refrigeration.png',
     imageAlt: 'Intervention technique sur chambre froide',
     priceMad: 450,
     unit: 'intervention',
@@ -1445,8 +2368,8 @@ const MAINTENANCE_SERVICE_PRODUCTS: ProductCatalogItem[] = [
   {
     slug: 'installation-lave-vaisselle-professionnel',
     name: 'Installation lave-vaisselle professionnel',
-    family: 'Maintenance',
-    imageUrl: '/assets/group-professionals.png',
+    family: 'Installation',
+    imageUrl: '/assets/service-products/installation-lave-vaisselle.png',
     imageAlt: 'Installation lave-vaisselle professionnel',
     priceMad: 350,
     unit: 'intervention',
@@ -1469,7 +2392,7 @@ const MAINTENANCE_SERVICE_PRODUCTS: ProductCatalogItem[] = [
     slug: 'entretien-hotte-aspirante',
     name: 'Entretien hotte aspirante',
     family: 'Maintenance',
-    imageUrl: '/assets/group-maintenance-alt.png',
+    imageUrl: '/assets/service-products/installation-hottes-aspiration.png',
     imageAlt: 'Entretien hotte aspirante professionnelle',
     priceMad: 280,
     unit: 'service',
@@ -1492,7 +2415,7 @@ const MAINTENANCE_SERVICE_PRODUCTS: ProductCatalogItem[] = [
     slug: 'diagnostic-equipement-cuisine',
     name: 'Diagnostic equipement cuisine',
     family: 'Maintenance',
-    imageUrl: '/assets/group-maintenance.png',
+    imageUrl: '/assets/service-products/depannage-urgent-cuisine.png',
     imageAlt: 'Diagnostic equipement cuisine professionnelle',
     priceMad: 250,
     unit: 'intervention',
@@ -1515,7 +2438,7 @@ const MAINTENANCE_SERVICE_PRODUCTS: ProductCatalogItem[] = [
     slug: 'reparation-machine-cafe-professionnelle',
     name: 'Reparation machine a cafe professionnelle',
     family: 'Maintenance',
-    imageUrl: '/assets/group-maintenance-alt.png',
+    imageUrl: '/assets/service-products/entretien-machines-cafe.png',
     imageAlt: 'Reparation machine a cafe professionnelle',
     priceMad: 320,
     unit: 'intervention',
@@ -1532,13 +2455,14 @@ const MAINTENANCE_SERVICE_PRODUCTS: ProductCatalogItem[] = [
       'Pieces sur devis',
     ],
     cardCharacteristics: ['Service', 'Cafe', 'Disponible'],
-    description: 'Reparation de machines a cafe professionnelles pour cafes, hotels et restaurants.',
+    description:
+      'Reparation de machines a cafe professionnelles pour cafes, hotels et restaurants.',
   },
   {
     slug: 'maintenance-friteuse-professionnelle',
     name: 'Maintenance friteuse professionnelle',
     family: 'Maintenance',
-    imageUrl: '/assets/group-cooking.png',
+    imageUrl: '/assets/service-products/reparation-equipements-cuisson.png',
     imageAlt: 'Maintenance friteuse professionnelle',
     priceMad: 300,
     unit: 'intervention',
@@ -1561,7 +2485,7 @@ const MAINTENANCE_SERVICE_PRODUCTS: ProductCatalogItem[] = [
     slug: 'contrat-maintenance-mensuel-cuisine-professionnelle',
     name: 'Contrat maintenance mensuel cuisine professionnelle',
     family: 'Maintenance',
-    imageUrl: '/assets/group-maintenance.png',
+    imageUrl: '/assets/service-products/contrat-maintenance-annuel.png',
     imageAlt: 'Contrat maintenance cuisine professionnelle',
     priceMad: 1200,
     unit: 'contrat',
@@ -1582,10 +2506,314 @@ const MAINTENANCE_SERVICE_PRODUCTS: ProductCatalogItem[] = [
   },
 ];
 
+const INSTALLATION_SERVICE_PRODUCTS: ProductCatalogItem[] = [
+  {
+    slug: 'installation-fours-professionnels',
+    name: 'Installation de fours professionnels',
+    family: 'Installation',
+    imageUrl: '/assets/service-products/installation-fours-professionnels.png',
+    imageAlt: 'Installation de four professionnel',
+    priceMad: 550,
+    unit: 'intervention',
+    minimumQuantity: 1,
+    maximumQuantity: 20,
+    quantityStep: 1,
+    rating: 4.8,
+    ratingCount: 34,
+    supplier: PROTECH_MAINTENANCE_SUPPLIER,
+    characteristics: [
+      'Pose et raccordement du four',
+      'Controle electricite ou gaz',
+      'Mise en service initiale',
+      'Essai de fonctionnement sur site',
+    ],
+    cardCharacteristics: ['Installation', 'Four pro', 'Sur site'],
+    description: 'Installation complete de fours professionnels pour cuisines CHR.',
+  },
+  {
+    slug: 'installation-friteuses-et-grills',
+    name: 'Installation de friteuses et grills',
+    family: 'Installation',
+    imageUrl: '/assets/service-products/installation-friteuses-grills.png',
+    imageAlt: 'Installation de friteuses et grills professionnels',
+    priceMad: 420,
+    unit: 'intervention',
+    minimumQuantity: 1,
+    maximumQuantity: 20,
+    quantityStep: 1,
+    rating: 4.7,
+    ratingCount: 28,
+    supplier: PROTECH_MAINTENANCE_SUPPLIER,
+    characteristics: [
+      'Positionnement et stabilisation',
+      'Raccordement energie',
+      'Verification securite',
+      'Demarrage avec technicien',
+    ],
+    cardCharacteristics: ['Installation', 'Cuisson', 'Sur devis'],
+    description: 'Installation de friteuses, grills et postes de cuisson snack.',
+  },
+  {
+    slug: 'installation-cuisinieres-professionnelles',
+    name: 'Installation de cuisinieres professionnelles',
+    family: 'Installation',
+    imageUrl: '/assets/service-products/installation-cuisinieres-professionnelles.png',
+    imageAlt: 'Installation de cuisiniere professionnelle',
+    priceMad: 520,
+    unit: 'intervention',
+    minimumQuantity: 1,
+    maximumQuantity: 20,
+    quantityStep: 1,
+    rating: 4.7,
+    ratingCount: 31,
+    supplier: PROTECH_MAINTENANCE_SUPPLIER,
+    characteristics: [
+      'Pose du bloc cuisson',
+      'Raccordement gaz ou electricite',
+      'Controle des bruleurs',
+      'Mise en service securisee',
+    ],
+    cardCharacteristics: ['Installation', 'Cuisiniere', 'Controle'],
+    description: 'Pose et raccordement de cuisinieres professionnelles pour restaurants.',
+  },
+  {
+    slug: 'installation-chambres-froides',
+    name: 'Installation de chambres froides',
+    family: 'Installation',
+    imageUrl: '/assets/service-products/installation-chambres-froides.png',
+    imageAlt: 'Installation de chambre froide professionnelle',
+    priceMad: 1250,
+    unit: 'intervention',
+    minimumQuantity: 1,
+    maximumQuantity: 10,
+    quantityStep: 1,
+    rating: 4.9,
+    ratingCount: 24,
+    supplier: PROTECH_MAINTENANCE_SUPPLIER,
+    characteristics: [
+      'Montage panneaux et porte',
+      'Controle groupe froid',
+      'Reglage temperature',
+      'Validation de mise en service',
+    ],
+    cardCharacteristics: ['Installation', 'Froid', 'Reglage'],
+    description: 'Installation de chambres froides positives ou negatives pour stockage CHR.',
+  },
+  {
+    slug: 'installation-vitrines-refrigerees',
+    name: 'Installation de vitrines refrigerees',
+    family: 'Installation',
+    imageUrl: '/assets/service-products/installation-vitrines-refrigerees.png',
+    imageAlt: 'Installation de vitrine refrigeree professionnelle',
+    priceMad: 480,
+    unit: 'intervention',
+    minimumQuantity: 1,
+    maximumQuantity: 20,
+    quantityStep: 1,
+    rating: 4.6,
+    ratingCount: 21,
+    supplier: PROTECH_MAINTENANCE_SUPPLIER,
+    characteristics: [
+      'Positionnement de la vitrine',
+      'Controle alimentation',
+      'Reglage temperature',
+      'Conseils d utilisation',
+    ],
+    cardCharacteristics: ['Installation', 'Vitrine', 'Froid'],
+    description: 'Installation et mise en route de vitrines refrigerees de presentation.',
+  },
+  {
+    slug: 'installation-machines-cafe-professionnelles',
+    name: 'Installation de machines a cafe professionnelles',
+    family: 'Installation',
+    imageUrl: '/assets/service-products/installation-machines-cafe.png',
+    imageAlt: 'Installation de machine a cafe professionnelle',
+    priceMad: 380,
+    unit: 'intervention',
+    minimumQuantity: 1,
+    maximumQuantity: 20,
+    quantityStep: 1,
+    rating: 4.8,
+    ratingCount: 29,
+    supplier: PROTECH_MAINTENANCE_SUPPLIER,
+    characteristics: [
+      'Raccordement eau et electricite',
+      'Reglage pression',
+      'Essai extraction cafe',
+      'Formation rapide equipe',
+    ],
+    cardCharacteristics: ['Installation', 'Cafe', 'Reglage'],
+    description: 'Installation de machines a cafe professionnelles pour cafes, hotels et restaurants.',
+  },
+  {
+    slug: 'installation-hottes-aspiration',
+    name: "Installation d'hottes d'aspiration",
+    family: 'Installation',
+    imageUrl: '/assets/service-products/installation-hottes-aspiration.png',
+    imageAlt: "Installation d'une hotte d aspiration professionnelle",
+    priceMad: 900,
+    unit: 'intervention',
+    minimumQuantity: 1,
+    maximumQuantity: 10,
+    quantityStep: 1,
+    rating: 4.7,
+    ratingCount: 22,
+    supplier: PROTECH_MAINTENANCE_SUPPLIER,
+    characteristics: [
+      'Pose de hotte inox',
+      'Controle extraction',
+      'Alignement sur ligne de cuisson',
+      'Verification de securite',
+    ],
+    cardCharacteristics: ['Installation', 'Hotte', 'Extraction'],
+    description: "Installation de hottes d aspiration pour cuisines professionnelles.",
+  },
+  {
+    slug: 'amenagement-cuisine-professionnelle',
+    name: 'Amenagement cuisine professionnelle',
+    family: 'Installation',
+    imageUrl: '/assets/service-products/amenagement-cuisine-professionnelle.png',
+    imageAlt: 'Amenagement de cuisine professionnelle',
+    priceMad: 1800,
+    unit: 'projet',
+    minimumQuantity: 1,
+    maximumQuantity: 5,
+    quantityStep: 1,
+    rating: 4.9,
+    ratingCount: 18,
+    supplier: PROTECH_MAINTENANCE_SUPPLIER,
+    characteristics: [
+      'Implantation des postes',
+      'Organisation flux cuisine',
+      'Coordination installation',
+      'Planification sur site',
+    ],
+    cardCharacteristics: ['Installation', 'Amenagement', 'Projet'],
+    description: 'Amenagement technique de cuisine professionnelle avec coordination sur site.',
+  },
+  {
+    slug: 'installation-standard',
+    name: 'Installation standard',
+    family: 'Installation',
+    imageUrl: '/assets/service-products/amenagement-cuisine-professionnelle.png',
+    imageAlt: 'Installation standard en cuisine professionnelle',
+    priceMad: 300,
+    unit: 'intervention',
+    minimumQuantity: 1,
+    maximumQuantity: 30,
+    quantityStep: 1,
+    rating: 4.6,
+    ratingCount: 26,
+    supplier: PROTECH_MAINTENANCE_SUPPLIER,
+    characteristics: [
+      'Installation simple equipement',
+      'Controle niveau et branchements',
+      'Essai rapide',
+      'Compte rendu intervention',
+    ],
+    cardCharacteristics: ['Installation', 'Standard', 'Rapide'],
+    description: 'Installation standard pour equipements CHR courants.',
+  },
+  {
+    slug: 'installation-sur-site',
+    name: 'Installation sur site',
+    family: 'Installation',
+    imageUrl: '/assets/service-products/amenagement-cuisine-professionnelle.png',
+    imageAlt: 'Installation sur site en cuisine professionnelle',
+    priceMad: 450,
+    unit: 'intervention',
+    minimumQuantity: 1,
+    maximumQuantity: 20,
+    quantityStep: 1,
+    rating: 4.7,
+    ratingCount: 25,
+    supplier: PROTECH_MAINTENANCE_SUPPLIER,
+    characteristics: [
+      'Deplacement technicien',
+      'Pose selon contraintes du local',
+      'Verification installation',
+      'Conseil exploitation',
+    ],
+    cardCharacteristics: ['Installation', 'Sur site', 'Technicien'],
+    description: 'Service d installation sur site pour cuisines professionnelles.',
+  },
+  {
+    slug: 'mise-conformite-reglementaire',
+    name: 'Mise en conformite reglementaire',
+    family: 'Installation',
+    imageUrl: '/assets/service-products/contrat-maintenance-annuel.png',
+    imageAlt: 'Mise en conformite reglementaire cuisine professionnelle',
+    priceMad: 700,
+    unit: 'audit',
+    minimumQuantity: 1,
+    maximumQuantity: 10,
+    quantityStep: 1,
+    rating: 4.8,
+    ratingCount: 17,
+    supplier: PROTECH_MAINTENANCE_SUPPLIER,
+    characteristics: [
+      'Controle securite installation',
+      'Verification raccordements',
+      'Points de conformite',
+      'Rapport technique',
+    ],
+    cardCharacteristics: ['Installation', 'Conformite', 'Rapport'],
+    description: 'Mise en conformite technique des installations de cuisine professionnelle.',
+  },
+  {
+    slug: 'mise-service-initiale',
+    name: 'Mise en service initiale',
+    family: 'Installation',
+    imageUrl: '/assets/service-products/extension-garantie-service.png',
+    imageAlt: 'Mise en service initiale equipement professionnel',
+    priceMad: 260,
+    unit: 'equipement',
+    minimumQuantity: 1,
+    maximumQuantity: 30,
+    quantityStep: 1,
+    rating: 4.6,
+    ratingCount: 19,
+    supplier: PROTECH_MAINTENANCE_SUPPLIER,
+    characteristics: [
+      'Premier demarrage',
+      'Controle parametres',
+      'Test fonctionnel',
+      'Conseils utilisateur',
+    ],
+    cardCharacteristics: ['Installation', 'Mise en route', 'Test'],
+    description: 'Mise en service initiale apres pose ou livraison d equipement CHR.',
+  },
+  {
+    slug: 'montage-sur-site',
+    name: 'Montage sur site',
+    family: 'Installation',
+    imageUrl: '/assets/service-products/amenagement-cuisine-professionnelle.png',
+    imageAlt: 'Montage sur site equipement professionnel',
+    priceMad: 360,
+    unit: 'intervention',
+    minimumQuantity: 1,
+    maximumQuantity: 30,
+    quantityStep: 1,
+    rating: 4.7,
+    ratingCount: 20,
+    supplier: PROTECH_MAINTENANCE_SUPPLIER,
+    characteristics: [
+      'Montage des elements',
+      'Fixation et stabilisation',
+      'Controle final',
+      'Nettoyage zone intervention',
+    ],
+    cardCharacteristics: ['Installation', 'Montage', 'Sur site'],
+    description: 'Montage sur site pour equipements professionnels de cuisine.',
+  },
+];
+
 export const PRODUCT_CATALOG: ProductCatalogItem[] = [
   ...ROOT_TUBER_PRODUCTS,
   ...GENERATED_FOOD_PRODUCTS,
   ...PROFESSIONAL_EQUIPMENT_PRODUCTS,
+  ...GENERATED_EQUIPMENT_MENU_PRODUCTS,
+  ...INSTALLATION_SERVICE_PRODUCTS,
   ...MAINTENANCE_SERVICE_PRODUCTS,
 ];
 
@@ -1594,7 +2822,21 @@ export function findProductBySlug(slug: string | null): ProductCatalogItem | und
 }
 
 export function getProductsByFamily(family: string | null): ProductCatalogItem[] {
-  return family ? PRODUCT_CATALOG.filter((product) => product.family === family) : PRODUCT_CATALOG;
+  const normalizedFamily = family ? normalizeProductFamily(family) : null;
+
+  return normalizedFamily
+    ? PRODUCT_CATALOG.filter(
+        (product) => normalizeProductFamily(product.family) === normalizedFamily,
+      )
+    : PRODUCT_CATALOG;
+}
+
+function normalizeProductFamily(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
 }
 
 function createGeneratedProduct(
@@ -1632,6 +2874,43 @@ function createGeneratedProduct(
     ],
     cardCharacteristics: [theme.packaging, theme.shortTrait],
     description: `${name} disponible pour restaurants, traiteurs, commerces alimentaires et achats en gros dans la catégorie ${familySeed.family}.`,
+  };
+}
+
+function createEquipmentMenuProduct(
+  familySeed: EquipmentFamilySeed,
+  name: string,
+  familyIndex: number,
+  itemIndex: number,
+): ProductCatalogItem {
+  const imageOverride = EQUIPMENT_IMAGE_OVERRIDES[name];
+  const priceMad = 650 + familyIndex * 370 + itemIndex * 290;
+  const rating = Number((4.3 + ((familyIndex + itemIndex) % 6) * 0.1).toFixed(1));
+
+  return {
+    slug: slugify(`${familySeed.family}-${name}`),
+    name,
+    family: familySeed.family,
+    imageUrl:
+      imageOverride?.imageUrl ??
+      createGeneratedImage(name, familySeed.family, EQUIPMENT_MENU_THEME),
+    imageAlt: imageOverride?.imageAlt ?? `${name} - ${familySeed.family}`,
+    priceMad,
+    unit: 'unite',
+    minimumQuantity: 1,
+    maximumQuantity: 20,
+    quantityStep: 1,
+    rating,
+    ratingCount: 12 + (((familyIndex + 3) * (itemIndex + 7)) % 68),
+    supplier: EQUIPMENT_SUPPLIER,
+    characteristics: [
+      familySeed.section,
+      `Famille ${familySeed.family}`,
+      'Selection CHR pour restaurants, hotels et traiteurs',
+      'Disponibilite et installation sur devis fournisseur',
+    ],
+    cardCharacteristics: ['Equipement', familySeed.family, 'Sur devis'],
+    description: `${name} disponible pour professionnels CHR dans la famille ${familySeed.family}.`,
   };
 }
 

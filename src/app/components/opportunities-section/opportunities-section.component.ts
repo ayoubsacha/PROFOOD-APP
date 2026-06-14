@@ -3,23 +3,22 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ProductApiService } from '../../core/product-api.service';
+import {
+  CATALOGUE_CATEGORIES,
+  CatalogueCategory,
+  CatalogueCategorySlug,
+  categorySliderId,
+  normalizeCatalogueValue,
+  productBelongsToCategory,
+} from '../../models/catalogue-category.models';
 import { PRODUCT_CATALOG, ProductCatalogItem } from '../../models/product-catalog.models';
-
-type FoodSliderId = 'fruits-legumes' | 'poissons' | 'lait' | 'viandes';
-
-interface FoodSliderConfig {
-  id: FoodSliderId;
-  title: string;
-  subtitle: string;
-  families: string[];
-}
 
 interface SliderFilter {
   search: string;
   family: string;
 }
 
-interface FoodSlider extends FoodSliderConfig {
+interface CategorySlider extends CatalogueCategory {
   products: ProductCatalogItem[];
   familyOptions: string[];
 }
@@ -34,88 +33,20 @@ export class OpportunitiesSectionComponent {
   private readonly productApi = inject(ProductApiService);
 
   protected readonly products = signal<ProductCatalogItem[]>(PRODUCT_CATALOG);
-  protected readonly filters = signal<Record<FoodSliderId, SliderFilter>>({
-    'fruits-legumes': { search: '', family: '' },
-    poissons: { search: '', family: '' },
-    lait: { search: '', family: '' },
-    viandes: { search: '', family: '' },
-  });
+  protected readonly filters = signal<Record<CatalogueCategorySlug, SliderFilter>>(
+    this.createInitialFilters(),
+  );
 
-  protected readonly sliderConfigs: FoodSliderConfig[] = [
-    {
-      id: 'fruits-legumes',
-      title: 'Fruits et légumes',
-      subtitle: 'Primeur, herbes, légumes, fruits frais et produits de saison.',
-      families: [
-        'Agrumes',
-        'Champignons',
-        'Fruits à noyau',
-        'Fruits à pépins',
-        'Fruits méditerranéens',
-        'Fruits rouges',
-        'Fruits secs & noix',
-        'Fruits tropicaux',
-        'Herbes aromatiques',
-        'Légumes bulbes',
-        'Légumes racines & tubercules',
-        'Légumineuses fraîches',
-        'Melons & pastèques',
-        'Raisins',
-      ],
-    },
-    {
-      id: 'poissons',
-      title: 'Poissons et fruits de mer',
-      subtitle: 'Poissons frais, crustacés, coquillages et découpes sous chaîne froide.',
-      families: [
-        'Céphalopodes',
-        'Coquillages',
-        'Crustacés',
-        'Filets & découpes',
-        'Poissons frais',
-        'Poissons nobles',
-        'Produits surgelés',
-      ],
-    },
-    {
-      id: 'lait',
-      title: 'Lait et produits dérivés',
-      subtitle: 'Lait, crème, beurre, fromages, desserts lactés et glacerie.',
-      families: [
-        'Beurres & matières grasses',
-        'Crèmes',
-        'Desserts lactés',
-        'Fromages frais',
-        'Glacerie',
-        'Lait',
-        'Matières grasses laitières',
-        'Yaourts & fermentés',
-      ],
-    },
-    {
-      id: 'viandes',
-      title: 'Viandes et volailles',
-      subtitle: 'Bovine, ovine, caprine, volaille, découpes et produits préparés.',
-      families: [
-        'Abats',
-        'Charcuterie halal',
-        'Produits préparés',
-        'Surgelés viande',
-        'Viande bovine',
-        'Viande caprine',
-        'Viande de veau',
-        'Viande ovine',
-        'Volaille',
-      ],
-    },
-  ];
+  protected readonly sliderConfigs = CATALOGUE_CATEGORIES;
 
-  protected readonly sliders = computed<FoodSlider[]>(() =>
+  protected readonly sliders = computed<CategorySlider[]>(() =>
     this.sliderConfigs.map((config) => {
-      const baseProducts = this.products().filter((product) => this.belongsToSlider(product, config));
-      const filter = this.filters()[config.id];
-      const search = this.normalize(filter.search);
-      const selectedFamily = this.normalize(filter.family);
+      const baseProducts = this.products().filter((product) =>
+        productBelongsToCategory(product, config),
+      );
+      const filter = this.filters()[config.slug];
+      const search = normalizeCatalogueValue(filter.search);
+      const selectedFamily = normalizeCatalogueValue(filter.family);
 
       return {
         ...config,
@@ -124,11 +55,11 @@ export class OpportunitiesSectionComponent {
           .filter((product) => {
             const matchesSearch =
               !search ||
-              this.normalize(
+              normalizeCatalogueValue(
                 `${product.name} ${product.supplier.name} ${product.cardCharacteristics.join(' ')}`,
               ).includes(search);
             const matchesFamily =
-              !selectedFamily || this.normalize(product.family) === selectedFamily;
+              !selectedFamily || normalizeCatalogueValue(product.family) === selectedFamily;
 
             return matchesSearch && matchesFamily;
           })
@@ -141,14 +72,14 @@ export class OpportunitiesSectionComponent {
     this.productApi
       .getProducts()
       .pipe(takeUntilDestroyed())
-      .subscribe((products) => this.products.set(products));
+      .subscribe((products) => this.products.set(this.mergeCatalogProducts(products)));
   }
 
-  protected filterFor(sliderId: FoodSliderId): SliderFilter {
+  protected filterFor(sliderId: CatalogueCategorySlug): SliderFilter {
     return this.filters()[sliderId];
   }
 
-  protected updateSearch(sliderId: FoodSliderId, search: string): void {
+  protected updateSearch(sliderId: CatalogueCategorySlug, search: string): void {
     this.filters.update((filters) => ({
       ...filters,
       [sliderId]: {
@@ -158,7 +89,7 @@ export class OpportunitiesSectionComponent {
     }));
   }
 
-  protected updateFamily(sliderId: FoodSliderId, family: string): void {
+  protected updateFamily(sliderId: CatalogueCategorySlug, family: string): void {
     this.filters.update((filters) => ({
       ...filters,
       [sliderId]: {
@@ -166,6 +97,10 @@ export class OpportunitiesSectionComponent {
         family,
       },
     }));
+  }
+
+  protected sliderElementId(sliderId: CatalogueCategorySlug): string {
+    return categorySliderId(sliderId);
   }
 
   protected scrollSlider(track: HTMLElement, direction: -1 | 1): void {
@@ -176,12 +111,31 @@ export class OpportunitiesSectionComponent {
   }
 
   protected priceText(product: ProductCatalogItem): string {
-    return `${this.money(product.priceMad)} MAD / ${product.unit}`;
+    const price = `${this.money(product.priceMad)} MAD`;
+    return this.isService(product) ? `A partir de ${price} / ${product.unit}` : `${price} / ${product.unit}`;
   }
 
-  private belongsToSlider(product: ProductCatalogItem, slider: FoodSliderConfig): boolean {
-    const productFamily = this.normalize(product.family);
-    return slider.families.some((family) => this.normalize(family) === productFamily);
+  protected productBadge(product: ProductCatalogItem): string {
+    return this.isService(product) ? 'Service' : product.family;
+  }
+
+  protected productKicker(product: ProductCatalogItem): string {
+    return product.cardCharacteristics[1] || product.cardCharacteristics[0] || product.family;
+  }
+
+  private createInitialFilters(): Record<CatalogueCategorySlug, SliderFilter> {
+    return CATALOGUE_CATEGORIES.reduce(
+      (filters, category) => ({
+        ...filters,
+        [category.slug]: { search: '', family: '' },
+      }),
+      {} as Record<CatalogueCategorySlug, SliderFilter>,
+    );
+  }
+
+  private isService(product: ProductCatalogItem): boolean {
+    const family = normalizeCatalogueValue(product.family);
+    return family === 'maintenance' || family === 'installation';
   }
 
   private familyOptions(products: ProductCatalogItem[]): string[] {
@@ -190,18 +144,19 @@ export class OpportunitiesSectionComponent {
     );
   }
 
+  private mergeCatalogProducts(products: ProductCatalogItem[]): ProductCatalogItem[] {
+    const productsBySlug = new Map<string, ProductCatalogItem>();
+
+    PRODUCT_CATALOG.forEach((product) => productsBySlug.set(product.slug, product));
+    products.forEach((product) => productsBySlug.set(product.slug, product));
+
+    return [...productsBySlug.values()];
+  }
+
   private money(value: number): string {
     return new Intl.NumberFormat('fr-MA', {
       maximumFractionDigits: 2,
       minimumFractionDigits: Number.isInteger(value) ? 0 : 2,
     }).format(value);
-  }
-
-  private normalize(value: string): string {
-    return value
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
-      .trim();
   }
 }

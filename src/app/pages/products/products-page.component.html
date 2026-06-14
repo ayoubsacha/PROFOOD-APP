@@ -1,11 +1,13 @@
-<main class="products-page">
+<main class="products-page" [class.products-page--focused]="selectedFamily()">
   <header class="catalogue-hero">
-    <a routerLink="/">Retour accueil</a>
-    <h1>Catalogue PROFOOD</h1>
-    <p>
-      Produits alimentaires, équipements professionnels et services de maintenance pour les
-      clients B2B.
-    </p>
+    @if (!selectedFamily()) {
+      <a routerLink="/">Retour accueil</a>
+    }
+    <h1>{{ pageTitle() }}</h1>
+    <p>{{ pageDescription() }}</p>
+    @if (selectedFamily()) {
+      <a routerLink="/products" class="catalogue-hero__button">Voir tout le catalogue</a>
+    }
   </header>
 
   @if (isLoading()) {
@@ -15,66 +17,71 @@
     </section>
   }
 
-  <section class="group-shortcuts" aria-labelledby="group-shortcuts-title">
-    <div class="section-title">
-      <span>Groupes</span>
-      <h2 id="group-shortcuts-title">Accès rapide par catégorie</h2>
-    </div>
+  @if (selectedFamily()) {
+    @if (focusedGroup(); as group) {
+      <section class="focused-catalogue" aria-label="Catalogue filtré">
+        <aside class="focused-filter" aria-label="Filtres">
+          <div class="focused-filter__icon" aria-hidden="true">▾</div>
+          <h2>Filtrer Votre Recherche</h2>
 
-    <div class="group-shortcuts__grid">
-      @for (group of groups(); track group.id) {
-        <a
-          class="group-card"
-          [attr.href]="'#' + sectionId(group.id)"
-          (click)="scrollToGroup(group.id, $event)"
-        >
-          <img [src]="group.image" [alt]="group.label" loading="lazy" decoding="async" />
-          <span>{{ group.totalProducts }} éléments</span>
-          <strong>{{ group.label }}</strong>
-          <small>{{ group.description }}</small>
-        </a>
-      }
-    </div>
-  </section>
-
-  <section class="catalogue-sections" aria-label="Catalogue par groupe">
-    @for (group of groups(); track group.id) {
-      <article class="catalogue-section" [id]="sectionId(group.id)">
-        <header class="catalogue-section__header">
-          <div>
-            <span class="catalogue-section__kicker">{{ group.totalProducts }} éléments</span>
-            <h2>{{ group.label }}</h2>
-            <p>{{ group.description }}</p>
-          </div>
-
-          <label class="section-search">
-            <span class="sr-only">Recherche dans {{ group.label }}</span>
+          <label>
+            <span>Recherche Par Titre</span>
             <input
               type="search"
-              [placeholder]="
-                group.id === 'maintenance'
-                  ? 'Rechercher un service par nom...'
-                  : 'Rechercher un produit par nom...'
-              "
+              placeholder="Recherche Par Titre"
               [value]="searchTerm(group.id)"
               (input)="updateGroupSearch(group.id, $event)"
             />
           </label>
-        </header>
 
-        <div class="catalogue-slider">
-          <button
-            class="slider-arrow slider-arrow--prev"
-            type="button"
-            [attr.aria-label]="'Produits précédents - ' + group.label"
-            (click)="scrollSlider(track, -1)"
-          >
-            ‹
-          </button>
+          <label>
+            <span>Recherche Par Marque</span>
+            <input
+              type="search"
+              placeholder="Recherche Par Marque"
+              [value]="focusedBrandSearch()"
+              (input)="updateFocusedBrandSearch($event)"
+            />
+          </label>
 
-          <div class="catalogue-track" #track>
+          <label>
+            <span>Catégorie</span>
+            <select disabled>
+              <option>{{ group.label }}</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Caractéristique</span>
+            <select [value]="focusedCharacteristic()" (input)="updateFocusedCharacteristic($event)">
+              <option value="">Toutes</option>
+              @for (option of focusedCharacteristicOptions(); track option) {
+                <option [value]="option">{{ option }}</option>
+              }
+            </select>
+          </label>
+
+          <label>
+            <span>Ordre</span>
+            <select [value]="focusedSort()" (input)="updateFocusedSort($event)">
+              <option value="">Par défaut</option>
+              <option value="price-asc">Prix croissant</option>
+              <option value="price-desc">Prix décroissant</option>
+              <option value="rating-desc">Meilleure note</option>
+              <option value="name-asc">Nom A-Z</option>
+            </select>
+          </label>
+        </aside>
+
+        <section class="focused-results" aria-live="polite">
+          <header class="focused-results__header">
+            <strong>{{ group.products.length }} produits</strong>
+            <span>{{ group.label }}</span>
+          </header>
+
+          <div class="focused-grid">
             @for (product of group.products; track product.slug) {
-              <a class="catalogue-card" [routerLink]="['/products', product.slug]">
+              <a class="focused-product-card" [routerLink]="['/products', product.slug]">
                 <figure>
                   <img
                     [src]="product.imageUrl"
@@ -85,42 +92,144 @@
                   <span>{{ isService(product) ? 'Service' : product.family }}</span>
                 </figure>
 
-                <div class="catalogue-card__body">
-                  <div>
-                    <small>{{ statusLabel(product) }}</small>
-                    <h3>{{ product.name }}</h3>
-                    <p>{{ product.supplier.name }}</p>
-                  </div>
-
+                <div class="focused-product-card__body">
+                  <small>{{ statusLabel(product) }}</small>
+                  <h3>{{ product.name }}</h3>
+                  <p>{{ product.supplier.name }}</p>
                   <strong>{{ priceText(product) }}</strong>
 
-                  <div class="catalogue-card__tags">
+                  <div class="focused-product-card__tags">
                     @for (tag of productTags(product); track tag) {
                       <span>{{ tag }}</span>
                     }
                   </div>
 
-                  <span class="catalogue-card__action">{{ actionLabel(product) }}</span>
+                  <span class="focused-product-card__action">{{ actionLabel(product) }}</span>
                 </div>
               </a>
             } @empty {
-              <div class="catalogue-empty" aria-live="polite">
-                <h3>Aucun résultat</h3>
-                <p>Essayez un autre nom dans cette section uniquement.</p>
+              <div class="focused-empty">
+                <h2>Aucun produit trouvé</h2>
+                <p>Essayez un autre titre, fournisseur ou critère.</p>
               </div>
             }
           </div>
-
-          <button
-            class="slider-arrow slider-arrow--next"
-            type="button"
-            [attr.aria-label]="'Produits suivants - ' + group.label"
-            (click)="scrollSlider(track, 1)"
-          >
-            ›
-          </button>
-        </div>
-      </article>
+        </section>
+      </section>
+    } @else {
+      <section class="catalogue-empty catalogue-empty--page">
+        <h2>Catégorie introuvable</h2>
+        <p>Retournez au catalogue complet pour choisir une autre catégorie.</p>
+      </section>
     }
-  </section>
+  } @else {
+    <section class="group-shortcuts" aria-labelledby="group-shortcuts-title">
+      <div class="section-title">
+        <span>Groupes</span>
+        <h2 id="group-shortcuts-title">Accès rapide par catégorie</h2>
+      </div>
+
+      <div class="group-shortcuts__grid">
+        @for (group of groups(); track group.id) {
+          <a
+            class="group-card"
+            [attr.href]="'#' + sectionId(group.id)"
+            (click)="scrollToGroup(group.id, $event)"
+          >
+            <img [src]="group.image" [alt]="group.label" loading="lazy" decoding="async" />
+            <span>{{ group.totalProducts }} éléments</span>
+            <strong>{{ group.label }}</strong>
+            <small>{{ group.description }}</small>
+          </a>
+        }
+      </div>
+    </section>
+
+    <section class="catalogue-sections" aria-label="Catalogue par groupe">
+      @for (group of groups(); track group.id) {
+        <article class="catalogue-section" [id]="sectionId(group.id)">
+          <header class="catalogue-section__header">
+            <div>
+              <span class="catalogue-section__kicker">{{ group.totalProducts }} éléments</span>
+              <h2>{{ group.label }}</h2>
+              <p>{{ group.description }}</p>
+            </div>
+
+            <label class="section-search">
+              <span class="sr-only">Recherche dans {{ group.label }}</span>
+              <input
+                type="search"
+                [placeholder]="
+                  group.id === 'maintenance'
+                    ? 'Rechercher un service par nom...'
+                    : 'Rechercher un produit par nom...'
+                "
+                [value]="searchTerm(group.id)"
+                (input)="updateGroupSearch(group.id, $event)"
+              />
+            </label>
+          </header>
+
+          <div class="catalogue-slider">
+            <button
+              class="slider-arrow slider-arrow--prev"
+              type="button"
+              [attr.aria-label]="'Produits précédents - ' + group.label"
+              (click)="scrollSlider(track, -1)"
+            >
+              ‹
+            </button>
+
+            <div class="catalogue-track" #track>
+              @for (product of group.products; track product.slug) {
+                <a class="catalogue-card" [routerLink]="['/products', product.slug]">
+                  <figure>
+                    <img
+                      [src]="product.imageUrl"
+                      [alt]="product.imageAlt"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span>{{ isService(product) ? 'Service' : product.family }}</span>
+                  </figure>
+
+                  <div class="catalogue-card__body">
+                    <div>
+                      <small>{{ statusLabel(product) }}</small>
+                      <h3>{{ product.name }}</h3>
+                      <p>{{ product.supplier.name }}</p>
+                    </div>
+
+                    <strong>{{ priceText(product) }}</strong>
+
+                    <div class="catalogue-card__tags">
+                      @for (tag of productTags(product); track tag) {
+                        <span>{{ tag }}</span>
+                      }
+                    </div>
+
+                    <span class="catalogue-card__action">{{ actionLabel(product) }}</span>
+                  </div>
+                </a>
+              } @empty {
+                <div class="catalogue-empty" aria-live="polite">
+                  <h3>Aucun résultat</h3>
+                  <p>Essayez un autre nom dans cette section uniquement.</p>
+                </div>
+              }
+            </div>
+
+            <button
+              class="slider-arrow slider-arrow--next"
+              type="button"
+              [attr.aria-label]="'Produits suivants - ' + group.label"
+              (click)="scrollSlider(track, 1)"
+            >
+              ›
+            </button>
+          </div>
+        </article>
+      }
+    </section>
+  }
 </main>

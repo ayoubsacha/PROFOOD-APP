@@ -11,7 +11,9 @@ export class HeroSectionComponent {
   protected readonly categories = [
     'Tous',
     'Équipements de froid',
-    'Équipements de cuisson',
+    'Cuisson',
+    'Fours',
+    'Service & présentation',
     'Livraison',
     'Acteurs professionnels',
     'Événements Profood',
@@ -19,7 +21,6 @@ export class HeroSectionComponent {
     'Poissons et fruits de mer',
     'Lait et produits dérivés',
     'Viandes et volailles',
-    'Maintenance',
   ];
 
   protected readonly searchSummary = signal('');

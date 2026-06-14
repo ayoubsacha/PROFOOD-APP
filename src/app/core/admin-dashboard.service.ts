@@ -14,9 +14,16 @@ import {
 } from './dashboard.models';
 import { HttpClient } from '@angular/common/http';
 
+const ADMIN_PROFILE_EXTRAS_KEY = 'profood-admin-profile-extras';
+const ADMIN_REQUEST_NOTES_KEY = 'profood-admin-request-notes';
+
 interface CountRow {
   key: string;
   count: number;
+}
+
+export interface AdminProfileExtras {
+  email?: string;
 }
 
 type RawAdminAnalytics = Omit<
@@ -59,6 +66,39 @@ export class AdminDashboardService {
       map((response) => this.normalizeAnalytics(response.data)),
       catchError(() => of(this.emptyAnalytics())),
     );
+  }
+
+  getAdminProfileExtras(userId: string): Observable<AdminProfileExtras> {
+    // TODO: Replace this local fallback when PATCH /auth/me supports admin email updates.
+    return of(this.readAdminProfileExtras(userId));
+  }
+
+  saveAdminProfileExtras(userId: string, extras: AdminProfileExtras): Observable<AdminProfileExtras> {
+    // TODO: Replace this local fallback when PATCH /auth/me supports admin email updates.
+    const nextExtras = {
+      ...this.readAdminProfileExtras(userId),
+      ...extras,
+    };
+    this.writeAdminProfileExtras(userId, nextExtras);
+    return of(nextExtras);
+  }
+
+  getRequestReviewNote(requestId: string): string {
+    // TODO: Replace this local fallback when account request review notes are returned by the backend.
+    return this.readRequestNotes()[requestId] || '';
+  }
+
+  saveRequestReviewNote(requestId: string, note: string): Observable<string> {
+    // TODO: Replace this local fallback when account request review notes are persisted by the backend.
+    const notes = this.readRequestNotes();
+    notes[requestId] = note;
+    this.writeRequestNotes(notes);
+    return of(note);
+  }
+
+  fallbackSupplierRating(): number {
+    // TODO: Replace with a backend fournisseur rating metric when it exists.
+    return 4.7;
   }
 
   private normalizeAnalytics(data: RawAdminAnalytics): AdminAnalytics {
@@ -107,5 +147,57 @@ export class AdminDashboardService {
       recentUsers: [],
       pendingRequests: [] as AccountRequest[],
     };
+  }
+
+  private readAdminProfileExtras(userId: string): AdminProfileExtras {
+    if (typeof localStorage === 'undefined') {
+      return {};
+    }
+
+    const rawValue = localStorage.getItem(`${ADMIN_PROFILE_EXTRAS_KEY}:${userId}`);
+
+    if (!rawValue) {
+      return {};
+    }
+
+    try {
+      return JSON.parse(rawValue) as AdminProfileExtras;
+    } catch {
+      return {};
+    }
+  }
+
+  private writeAdminProfileExtras(userId: string, extras: AdminProfileExtras): void {
+    if (typeof localStorage === 'undefined') {
+      return;
+    }
+
+    localStorage.setItem(`${ADMIN_PROFILE_EXTRAS_KEY}:${userId}`, JSON.stringify(extras));
+  }
+
+  private readRequestNotes(): Record<string, string> {
+    if (typeof localStorage === 'undefined') {
+      return {};
+    }
+
+    const rawValue = localStorage.getItem(ADMIN_REQUEST_NOTES_KEY);
+
+    if (!rawValue) {
+      return {};
+    }
+
+    try {
+      return JSON.parse(rawValue) as Record<string, string>;
+    } catch {
+      return {};
+    }
+  }
+
+  private writeRequestNotes(notes: Record<string, string>): void {
+    if (typeof localStorage === 'undefined') {
+      return;
+    }
+
+    localStorage.setItem(ADMIN_REQUEST_NOTES_KEY, JSON.stringify(notes));
   }
 }

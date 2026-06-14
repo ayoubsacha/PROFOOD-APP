@@ -21,6 +21,38 @@
         <strong>{{ user.companyName || user.name }}</strong>
         <small>{{ user.email }}</small>
       </section>
+
+      <section class="notification-card">
+        <button type="button" class="notification-trigger" (click)="toggleNotificationPanel()">
+          <span class="nav-icon nav-icon--notifications" aria-hidden="true"></span>
+          <strong>Notifications</strong>
+          @if (unreadNotifications()) {
+            <b>{{ unreadNotifications() }}</b>
+          }
+        </button>
+
+        @if (notificationPanelOpen()) {
+          <div class="notification-panel">
+            <header>
+              <span>Messages</span>
+              <button type="button" (click)="markAllNotificationsRead()">Tout lu</button>
+            </header>
+            @for (notification of notifications().slice(0, 5); track notification._id) {
+              <button
+                type="button"
+                [class.is-unread]="!notification.read"
+                (click)="openNotification(notification)"
+              >
+                <strong>{{ notification.title }}</strong>
+                <span>{{ notification.message }}</span>
+                <small>{{ dateText(notification.createdAt) }}</small>
+              </button>
+            } @empty {
+              <p>Aucune notification.</p>
+            }
+          </div>
+        }
+      </section>
     }
 
     <span class="nav-label">Navigation</span>
@@ -561,7 +593,11 @@
                     (click)="selectConversation(conversation)"
                   >
                     <strong>{{ conversationTitle(conversation) }}</strong>
-                    <span>{{ conversation.lastMessage || conversationSubtitle(conversation) }}</span>
+                    <span>{{ conversationSubtitle(conversation) }}</span>
+                    <small>{{ conversationMeta(conversation) }}</small>
+                    @if (conversation.unreadCount) {
+                      <b>{{ conversation.unreadCount }} non lu</b>
+                    }
                   </button>
                 }
               } @else {
@@ -573,8 +609,11 @@
               @if (selectedConversation()) {
                 <div class="message-list">
                   @for (message of messages(); track message._id) {
-                    <article class="message-bubble">
+                    <article class="message-bubble" [class.message-bubble--own]="isOwnMessage(message)">
                       <strong>{{ messageSender(message) }}</strong>
+                      @if (messageContext(message)) {
+                        <span class="message-context">{{ messageContext(message) }}</span>
+                      }
                       <p>{{ message.content }}</p>
                       <small>{{ dateText(message.createdAt) }}</small>
                     </article>

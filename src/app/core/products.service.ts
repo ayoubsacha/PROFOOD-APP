@@ -35,4 +35,14 @@ export class ProductsService {
       .patch<ApiResponse<BackendProduct>>(`${API_BASE_URL}/products/${productId}/disable`, {})
       .pipe(map((response) => response.data));
   }
+
+  deleteProduct(productId: string): Observable<BackendProduct | null> {
+    return this.http
+      .delete<ApiResponse<BackendProduct | { deleted: true }>>(`${API_BASE_URL}/products/${productId}`)
+      .pipe(
+        map((response) =>
+          response.data && 'deleted' in response.data ? null : (response.data as BackendProduct),
+        ),
+      );
+  }
 }

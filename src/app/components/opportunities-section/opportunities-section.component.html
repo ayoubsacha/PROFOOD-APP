@@ -3,21 +3,21 @@
     <header class="section-heading">
       <span>Catalogue B2B</span>
       <h2 id="food-sliders-title">Produits professionnels par famille</h2>
-      <p>Chaque slider affiche uniquement sa catégorie, avec son propre filtre de recherche.</p>
+      <p>Chaque slider affiche uniquement sa categorie, avec son propre filtre de recherche.</p>
     </header>
 
     <div class="slider-stack">
-      @for (slider of sliders(); track slider.id) {
-        <article class="product-slider" [id]="slider.id">
+      @for (slider of sliders(); track slider.slug) {
+        <article class="product-slider" [id]="sliderElementId(slider.slug)">
           <header class="product-slider__header">
             <div class="showcase-title">
               <span class="title-bar" aria-hidden="true"></span>
               <div>
                 <h3>{{ slider.title }}</h3>
-                <p>{{ slider.subtitle }}</p>
+                <p>{{ slider.description }}</p>
               </div>
             </div>
-            <a routerLink="/products">Accéder à l'espace {{ slider.title }} ›</a>
+            <a [routerLink]="['/catalogue', slider.slug]">Voir tout</a>
           </header>
 
           <div class="product-slider__layout">
@@ -33,20 +33,20 @@
                   <input
                     type="search"
                     placeholder="Titre"
-                    [ngModel]="filterFor(slider.id).search"
+                    [ngModel]="filterFor(slider.slug).search"
                     [ngModelOptions]="{ standalone: true }"
-                    (ngModelChange)="updateSearch(slider.id, $event)"
+                    (ngModelChange)="updateSearch(slider.slug, $event)"
                   />
                 </label>
 
                 <label>
-                  <span class="visually-hidden">Catégorie</span>
+                  <span class="visually-hidden">Categorie</span>
                   <select
-                    [ngModel]="filterFor(slider.id).family"
+                    [ngModel]="filterFor(slider.slug).family"
                     [ngModelOptions]="{ standalone: true }"
-                    (ngModelChange)="updateFamily(slider.id, $event)"
+                    (ngModelChange)="updateFamily(slider.slug, $event)"
                   >
-                    <option value="">Catégorie</option>
+                    <option value="">Categorie</option>
                     @for (family of slider.familyOptions; track family) {
                       <option [value]="family">{{ family }}</option>
                     }
@@ -59,10 +59,10 @@
               <button
                 class="slider-button slider-button--prev"
                 type="button"
-                [attr.aria-label]="'Produits précédents - ' + slider.title"
+                [attr.aria-label]="'Produits precedents - ' + slider.title"
                 (click)="scrollSlider(track, -1)"
               >
-                ‹
+                &lsaquo;
               </button>
 
               <div class="product-track" #track>
@@ -70,10 +70,11 @@
                   <a class="product-card" [routerLink]="['/products', product.slug]">
                     <figure>
                       <img [src]="product.imageUrl" [alt]="product.imageAlt" />
-                      <span>{{ product.family }}</span>
+                      <span>{{ productBadge(product) }}</span>
                     </figure>
 
                     <div class="product-card__body">
+                      <span class="product-card__kicker">{{ productKicker(product) }}</span>
                       <strong>{{ product.name }}</strong>
                       <small>{{ product.supplier.name }}</small>
                       <p>{{ priceText(product) }}</p>
@@ -82,6 +83,9 @@
                           <span>{{ tag }}</span>
                         }
                       </div>
+                      <span class="product-card__action">
+                        {{ productBadge(product) === 'Service' ? 'Demander un devis' : 'Voir le produit' }}
+                      </span>
                     </div>
                   </a>
                 } @empty {
@@ -95,7 +99,7 @@
                 [attr.aria-label]="'Produits suivants - ' + slider.title"
                 (click)="scrollSlider(track, 1)"
               >
-                ›
+                &rsaquo;
               </button>
             </div>
           </div>

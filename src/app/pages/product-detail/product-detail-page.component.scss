@@ -46,15 +46,9 @@ a {
   align-items: start;
 }
 
-.product-media img,
-.related-product img {
+.product-media img {
   width: 100%;
   display: block;
-}
-
-.related-product img {
-  height: 100%;
-  object-fit: cover;
 }
 
 .product-media img {
@@ -237,7 +231,7 @@ dt {
 }
 
 .purchase-card .stock {
-  color: #40c463;
+  color: #d6a85a;
   font-size: 1rem;
 }
 
@@ -260,23 +254,38 @@ dt {
 }
 
 .quote-button,
-.buy-button {
+.buy-button,
+.contact-button {
   width: 100%;
   min-height: 42px;
   margin-top: 0.7rem;
   border: 0;
   border-radius: 999px;
-  color: #15161a;
   font-weight: 950;
   cursor: pointer;
 }
 
 .quote-button {
+  color: #15161a;
   background: #f4c542;
 }
 
 .buy-button {
+  color: #15161a;
   background: #ffffff;
+}
+
+.contact-button {
+  border: 1px solid #2e3b4f;
+  color: #ffffff;
+  background: #243041;
+}
+
+.contact-button:hover,
+.contact-button:focus-visible {
+  border-color: #3a4960;
+  background: #2b394d;
+  outline: none;
 }
 
 .cart-message {
@@ -284,6 +293,14 @@ dt {
   color: rgba(255, 255, 255, 0.78);
   font-size: 0.78rem;
   font-weight: 800;
+  text-align: center;
+}
+
+.contact-error {
+  margin: 0.55rem 0 0;
+  color: #ffc9c2;
+  font-size: 0.78rem;
+  font-weight: 850;
   text-align: center;
 }
 
@@ -377,27 +394,113 @@ summary {
 
 .related-product a {
   margin-top: 0.9rem;
-  padding: 0.75rem;
-  border: 1px solid #3c3d44;
+  overflow: hidden;
+  border: 1px solid #303137;
   border-radius: 8px;
   display: grid;
-  grid-template-columns: 72px minmax(0, 1fr);
-  gap: 0.85rem;
+  grid-template-rows: 170px 1fr;
   color: #ffffff;
+  background: #25262b;
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.24);
+  transition:
+    border-color 160ms ease,
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.related-product a:hover,
+.related-product a:focus-visible {
+  border-color: #4a5260;
+  outline: none;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
+}
+
+.related-product figure {
+  position: relative;
+  margin: 0;
+  overflow: hidden;
+  background: #ffffff;
 }
 
 .related-product img {
-  height: 84px;
-  border-radius: 6px;
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
 }
 
-.related-product span,
-.related-product p {
-  margin-top: 0.35rem;
-  display: block;
-  color: rgba(255, 255, 255, 0.66);
-  font-size: 0.78rem;
-  font-weight: 800;
+.related-product figure span {
+  position: absolute;
+  top: 0.7rem;
+  left: 0.7rem;
+  max-width: calc(100% - 1.4rem);
+  overflow: hidden;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  color: #17181d;
+  background: #ffffff;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
+  font-size: 0.66rem;
+  font-weight: 950;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.related-product__body {
+  min-width: 0;
+  padding: 0.95rem;
+  display: grid;
+  align-content: start;
+  gap: 0.55rem;
+}
+
+.related-product__body small {
+  color: #d6a85a;
+  font-size: 0.72rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.related-product__body strong {
+  color: #ffffff;
+  font-size: 1.05rem;
+  line-height: 1.25;
+}
+
+.related-product__body p {
+  margin: 0;
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.82rem;
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.related-product__body b {
+  color: #ffffff;
+  font-size: 1rem;
+  line-height: 1.3;
+}
+
+.related-product__action {
+  min-height: 38px;
+  margin-top: auto;
+  border: 1px solid #2e3b4f;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+  background: #243041;
+  font-size: 0.82rem;
+  font-weight: 950;
+}
+
+.related-product a:hover .related-product__action,
+.related-product a:focus-visible .related-product__action {
+  border-color: #3a4960;
+  background: #2b394d;
 }
 
 .product-not-found {
@@ -408,6 +511,117 @@ summary {
 .product-not-found a {
   margin-top: 1rem;
   display: block;
+}
+
+.contact-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  padding: 1rem;
+  display: grid;
+  place-items: center;
+  background: rgba(12, 16, 22, 0.72);
+}
+
+.contact-modal article {
+  width: min(520px, 100%);
+  max-height: min(720px, calc(100vh - 2rem));
+  overflow: auto;
+  padding: 1rem;
+  border: 1px solid #303137;
+  border-radius: 8px;
+  display: grid;
+  gap: 1rem;
+  background: #25262b;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.36);
+}
+
+.contact-modal header,
+.modal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.contact-modal header span {
+  color: #d6a85a;
+  font-size: 0.72rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.contact-modal dl {
+  margin: 0;
+  padding: 0.85rem;
+  border: 1px solid #3c3d44;
+  border-radius: 8px;
+  display: grid;
+  gap: 0.55rem;
+  background: #1e1f24;
+}
+
+.contact-modal form,
+.contact-modal label {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.contact-modal label span {
+  color: #ffffff;
+  font-size: 0.84rem;
+  font-weight: 850;
+}
+
+.contact-modal input,
+.contact-modal textarea {
+  width: 100%;
+  border: 1px solid #3c3d44;
+  border-radius: 8px;
+  padding: 0.72rem 0.85rem;
+  color: #ffffff;
+  background: #15161a;
+}
+
+.contact-modal input:focus-visible,
+.contact-modal textarea:focus-visible {
+  border-color: #a1623f;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(161, 98, 63, 0.18);
+}
+
+.modal-close,
+.cancel-button,
+.send-button {
+  min-height: 38px;
+  border: 1px solid #2e3b4f;
+  border-radius: 14px;
+  padding: 0 1rem;
+  color: #ffffff;
+  background: #243041;
+  cursor: pointer;
+  font-weight: 850;
+}
+
+.modal-close {
+  width: 38px;
+  padding: 0;
+}
+
+.modal-close:hover,
+.modal-close:focus-visible,
+.cancel-button:hover,
+.cancel-button:focus-visible,
+.send-button:hover,
+.send-button:focus-visible {
+  border-color: #3a4960;
+  background: #2b394d;
+  outline: none;
+}
+
+.send-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 @media (max-width: 1180px) {
@@ -432,7 +646,10 @@ summary {
 
   .option-grid,
   .purchase-card dl div,
-  .detail-main dl div {
+  .detail-main dl div,
+  .modal-actions {
     grid-template-columns: 1fr;
+    align-items: stretch;
+    flex-direction: column;
   }
 }

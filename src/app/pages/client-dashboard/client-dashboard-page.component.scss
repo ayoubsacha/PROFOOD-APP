@@ -246,6 +246,117 @@
     linear-gradient(-45deg, transparent 45%, currentColor 46% 54%, transparent 55%) 70% 68% / 38% 38% no-repeat;
 }
 
+.nav-icon--notifications {
+  border-radius: 50% 50% 44% 44%;
+  background:
+    linear-gradient(currentColor 0 0) 38% 92% / 24% 2px no-repeat,
+    radial-gradient(circle at 50% 12%, currentColor 0 12%, transparent 13%),
+    currentColor;
+}
+
+.notification-card {
+  position: relative;
+}
+
+.notification-trigger {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--btn-border);
+  border-radius: 14px;
+  padding: 0 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.72rem;
+  color: var(--btn-text);
+  background: var(--btn-bg);
+  cursor: pointer;
+  font-weight: 850;
+}
+
+.notification-trigger b {
+  min-width: 22px;
+  min-height: 22px;
+  margin-left: auto;
+  border-radius: 999px;
+  display: inline-grid;
+  place-items: center;
+  color: #171b22;
+  background: #d6a85a;
+  font-size: 0.72rem;
+}
+
+.notification-panel {
+  position: absolute;
+  inset: calc(100% + 0.45rem) 0 auto 0;
+  z-index: 80;
+  padding: 0.65rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  display: grid;
+  gap: 0.45rem;
+  background: #151a22;
+  box-shadow: 0 20px 44px rgba(0, 0, 0, 0.34);
+}
+
+.notification-panel header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+}
+
+.notification-panel header span {
+  color: #9aa7b9;
+  font-size: 0.72rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.notification-panel header button {
+  min-height: 28px;
+  border: 1px solid var(--btn-border);
+  border-radius: 999px;
+  padding: 0 0.6rem;
+  color: var(--btn-text);
+  background: var(--btn-bg);
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.notification-panel > button {
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 0.65rem;
+  display: grid;
+  gap: 0.22rem;
+  color: #f8fafc;
+  background: #0f141b;
+  cursor: pointer;
+  text-align: left;
+}
+
+.notification-panel > button.is-unread {
+  border-color: rgba(214, 168, 90, 0.35);
+  background: rgba(214, 168, 90, 0.12);
+}
+
+.notification-panel strong,
+.notification-panel span,
+.notification-panel small,
+.notification-panel p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.notification-panel span,
+.notification-panel small,
+.notification-panel p {
+  margin: 0;
+  color: #9aa7b9;
+  font-size: 0.78rem;
+}
+
 .dashboard-main {
   width: calc(100% - var(--client-sidebar-width));
   margin-left: var(--client-sidebar-width);
@@ -1203,10 +1314,23 @@ form {
   box-shadow: 0 6px 16px rgba(17, 24, 39, 0.05);
 }
 
+.message-bubble--own {
+  justify-self: end;
+  background: #f8fafc;
+}
+
 .message-bubble p {
   margin: 0.35rem 0;
   color: #334155;
   line-height: 1.5;
+}
+
+.message-context {
+  margin-top: 0.25rem;
+  display: block;
+  color: #d6a85a;
+  font-size: 0.76rem;
+  font-weight: 900;
 }
 
 .reply-form {
@@ -1476,6 +1600,10 @@ label {
 .message-bubble {
   background: #151a22;
   color: #f8fafc;
+}
+
+.message-bubble--own {
+  background: #1f2a3a;
 }
 
 .conversation-list button.is-active,

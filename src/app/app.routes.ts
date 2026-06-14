@@ -5,6 +5,7 @@ import { AccountRequestPageComponent } from './pages/account-request/account-req
 import { LoginPageComponent } from './pages/login/login-page.component';
 import { ProductDetailPageComponent } from './pages/product-detail/product-detail-page.component';
 import { ProductsPageComponent } from './pages/products/products-page.component';
+import { CategoryPageComponent } from './pages/category-page/category-page.component';
 import { RoleDashboardPageComponent } from './pages/role-dashboard/role-dashboard-page.component';
 import { FournisseurDashboardPageComponent } from './pages/fournisseur-dashboard/fournisseur-dashboard-page.component';
 import { ClientDashboardPageComponent } from './pages/client-dashboard/client-dashboard-page.component';
@@ -54,6 +55,12 @@ export const routes: Routes = [
     path: 'account-request',
     component: AccountRequestPageComponent,
     title: 'PlaceToInvest - Demande de compte',
+  },
+  {
+    path: 'catalogue/:categorySlug',
+    component: CategoryPageComponent,
+    canActivate: [activeAuthGuard],
+    title: 'PlaceToInvest - Categorie',
   },
   {
     path: 'products/:slug',

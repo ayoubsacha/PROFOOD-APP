@@ -1,20 +1,17 @@
 <section id="categories" class="categories" aria-labelledby="categories-title">
-  <h2 id="categories-title" class="visually-hidden">Catégories PlaceToInvest</h2>
+  <h2 id="categories-title" class="visually-hidden">Categories PROFOOD</h2>
 
   <div class="category-grid">
-    @for (category of categories; track category.title) {
-      <article class="category-card">
+    @for (category of categories; track category.slug) {
+      <button type="button" class="category-card" (click)="scrollToCategory(category)">
         <div class="category-card__media" [class]="'category-card__media tone-' + category.tone">
           <span class="category-card__shine" aria-hidden="true"></span>
         </div>
         <div class="category-card__body">
-          @if (category.icon) {
-            <span class="category-card__icon" aria-hidden="true">{{ category.icon }}</span>
-          }
           <h3>{{ category.title }}</h3>
-          <p>{{ category.count }}</p>
+          <p>{{ category.countLabel }}</p>
         </div>
-      </article>
+      </button>
     }
   </div>
 </section>

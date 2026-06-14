@@ -84,6 +84,17 @@
         @if (cartMessage()) {
           <p class="cart-message">{{ cartMessage() }}</p>
         }
+        @if (canContactSupplier()) {
+          <button type="button" class="contact-button" (click)="openContactModal()">
+            Contacter le fournisseur
+          </button>
+        }
+        @if (contactMessage()) {
+          <p class="cart-message">{{ contactMessage() }}</p>
+        }
+        @if (contactError()) {
+          <p class="contact-error">{{ contactError() }}</p>
+        }
         <button type="button" class="buy-button">Demander un devis</button>
 
         <dl>
@@ -170,11 +181,16 @@
           <section class="related-product">
             <h2>Competitively priced item</h2>
             <a [routerLink]="['/products', related.slug]">
-              <img [src]="related.imageUrl" [alt]="related.imageAlt" />
-              <div>
+              <figure>
+                <img [src]="related.imageUrl" [alt]="related.imageAlt" />
+                <span>{{ related.family }}</span>
+              </figure>
+              <div class="related-product__body">
+                <small>{{ related.rating }}/5 - {{ related.ratingCount }} avis</small>
                 <strong>{{ related.name }}</strong>
-                <span>{{ related.rating }}/5 · {{ related.ratingCount }} avis</span>
-                <p>{{ related.priceMad }} MAD / {{ related.unit }}</p>
+                <p>{{ related.supplier.name }}</p>
+                <b>{{ related.priceMad }} MAD / {{ related.unit }}</b>
+                <span class="related-product__action">Voir le produit</span>
               </div>
             </a>
           </section>
@@ -186,6 +202,55 @@
       <h1>Produit introuvable</h1>
       <p>Ce produit n'est pas disponible dans le catalogue.</p>
       <a routerLink="/products">Voir tous les produits</a>
+    </section>
+  }
+
+  @if (contactModalOpen() && product(); as product) {
+    <section class="contact-modal" aria-label="Contacter le fournisseur">
+      <article>
+        <header>
+          <div>
+            <span>Message fournisseur</span>
+            <h2>Contacter le fournisseur</h2>
+          </div>
+          <button type="button" class="modal-close" aria-label="Fermer" (click)="closeContactModal()">
+            x
+          </button>
+        </header>
+
+        <dl>
+          <div>
+            <dt>Produit</dt>
+            <dd>{{ product.name }}</dd>
+          </div>
+          <div>
+            <dt>Fournisseur</dt>
+            <dd>{{ product.supplier.name }}</dd>
+          </div>
+        </dl>
+
+        <form (ngSubmit)="sendContactMessage()">
+          <label>
+            <span>Sujet</span>
+            <input name="contactSubject" required [(ngModel)]="contactForm.subject" />
+          </label>
+          <label>
+            <span>Message</span>
+            <textarea name="contactBody" rows="5" required [(ngModel)]="contactForm.body"></textarea>
+          </label>
+
+          @if (contactError()) {
+            <p class="contact-error">{{ contactError() }}</p>
+          }
+
+          <div class="modal-actions">
+            <button type="button" class="cancel-button" (click)="closeContactModal()">Annuler</button>
+            <button type="submit" class="send-button" [disabled]="contactSending()">
+              {{ contactSending() ? 'Envoi...' : 'Envoyer' }}
+            </button>
+          </div>
+        </form>
+      </article>
     </section>
   }
 </main>

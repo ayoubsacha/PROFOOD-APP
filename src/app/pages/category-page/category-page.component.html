@@ -1,0 +1,67 @@
+<main class="category-page">
+  <header class="category-hero">
+    <a routerLink="/home">Retour accueil</a>
+
+    @if (category(); as category) {
+      <span>{{ category.countLabel }}</span>
+      <h1>{{ category.title }}</h1>
+      <p>{{ category.description }}</p>
+    } @else {
+      <span>Catalogue</span>
+      <h1>Categorie introuvable</h1>
+      <p>Cette categorie n'existe pas dans le catalogue PROFOOD.</p>
+    }
+  </header>
+
+  @if (category(); as category) {
+    <section class="category-toolbar" aria-label="Recherche categorie">
+      <label>
+        <span>Recherche par nom</span>
+        <input
+          type="search"
+          placeholder="Rechercher un produit..."
+          [ngModel]="search()"
+          (ngModelChange)="updateSearch($event)"
+        />
+      </label>
+    </section>
+
+    @if (isLoading()) {
+      <section class="category-loading" aria-live="polite">
+        <span aria-hidden="true"></span>
+        Chargement de la categorie...
+      </section>
+    }
+
+    <section class="category-grid" [attr.aria-label]="category.title">
+      @for (product of categoryProducts(); track product.slug) {
+        <a class="category-card" [routerLink]="['/products', product.slug]">
+          <figure>
+            <img [src]="product.imageUrl" [alt]="product.imageAlt" loading="lazy" decoding="async" />
+            <span>{{ isService(product) ? 'Service' : product.family }}</span>
+          </figure>
+
+          <div class="category-card__body">
+            <small>{{ statusLabel(product) }}</small>
+            <h2>{{ product.name }}</h2>
+            <p>{{ product.supplier.name }}</p>
+            <strong>{{ priceText(product) }}</strong>
+
+            <div class="category-card__tags">
+              @for (tag of productTags(product); track tag) {
+                <span>{{ tag }}</span>
+              }
+            </div>
+
+            <span class="category-card__action">{{ actionLabel(product) }}</span>
+          </div>
+        </a>
+      } @empty {
+        <section class="category-empty">
+          <h2>Aucun resultat</h2>
+          <p>Essayez un autre nom dans cette categorie uniquement.</p>
+        </section>
+      }
+    </section>
+  }
+</main>

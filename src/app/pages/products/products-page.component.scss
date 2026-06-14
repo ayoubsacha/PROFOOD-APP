@@ -12,6 +12,11 @@
   padding: 3rem 0 5rem;
 }
 
+.products-page--focused {
+  width: min(1040px, calc(100% - 2rem));
+  padding-top: 0.85rem;
+}
+
 .catalogue-hero {
   padding-bottom: 1.45rem;
   border-bottom: 1px solid #303137;
@@ -21,6 +26,28 @@
   color: rgba(255, 255, 255, 0.78);
   font-weight: 900;
   text-decoration: none;
+}
+
+.catalogue-hero__button {
+  width: fit-content;
+  margin-top: 1.25rem;
+  min-height: 34px;
+  padding: 0 0.9rem;
+  border: 1px solid #2e3440;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  color: #ffffff;
+  background: #171b22;
+  font-size: 0.78rem;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.22);
+}
+
+.catalogue-hero__button:hover,
+.catalogue-hero__button:focus-visible {
+  border-color: #46505f;
+  outline: none;
+  background: #202631;
 }
 
 .catalogue-hero h1 {
@@ -72,7 +99,7 @@
 
 .section-title span,
 .catalogue-section__kicker {
-  color: #59d174;
+  color: #d6a85a;
   font-size: 0.75rem;
   font-weight: 950;
   text-transform: uppercase;
@@ -117,7 +144,7 @@
 
 .group-card:hover,
 .group-card:focus-visible {
-  border-color: #59d174;
+  border-color: #4a5260;
   outline: none;
   box-shadow: 0 24px 48px rgba(0, 0, 0, 0.3);
   transform: translateY(-2px);
@@ -260,7 +287,7 @@
 
 .catalogue-card:hover,
 .catalogue-card:focus-visible {
-  border-color: #ffffff;
+  border-color: #4a5260;
   outline: none;
   box-shadow: 0 24px 48px rgba(0, 0, 0, 0.3);
   transform: translateY(-2px);
@@ -307,7 +334,7 @@
 }
 
 .catalogue-card__body small {
-  color: #59d174;
+  color: #d6a85a;
   font-size: 0.72rem;
   font-weight: 950;
   text-transform: uppercase;
@@ -354,13 +381,20 @@
 .catalogue-card__action {
   min-height: 38px;
   margin-top: auto;
-  border-radius: 6px;
+  border: 1px solid #2e3b4f;
+  border-radius: 8px;
   display: grid;
   place-items: center;
-  color: #15161a;
-  background: #ffffff;
+  color: #ffffff;
+  background: #243041;
   font-size: 0.82rem;
   font-weight: 950;
+}
+
+.catalogue-card:hover .catalogue-card__action,
+.catalogue-card:focus-visible .catalogue-card__action {
+  border-color: #3a4960;
+  background: #2b394d;
 }
 
 .slider-arrow {
@@ -384,7 +418,8 @@
 .slider-arrow:hover,
 .slider-arrow:focus-visible {
   outline: none;
-  background: #59d174;
+  color: #ffffff;
+  background: #2b394d;
 }
 
 .slider-arrow--prev {
@@ -420,6 +455,292 @@
   color: rgba(255, 255, 255, 0.68);
 }
 
+.focused-catalogue {
+  margin-top: 1.45rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid #2a2d35;
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.focused-filter {
+  position: sticky;
+  top: 0.9rem;
+  min-height: 316px;
+  padding: 0.8rem;
+  border: 1px solid #3b414c;
+  border-left: 3px solid #9aa1ad;
+  border-radius: 6px;
+  display: grid;
+  gap: 0.78rem;
+  color: #ffffff;
+  background: #1b1f26;
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.24);
+}
+
+.focused-filter__icon {
+  height: 22px;
+  display: grid;
+  place-items: center;
+  color: #c8ced8;
+  font-size: 1rem;
+}
+
+.focused-filter h2 {
+  margin: 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #333944;
+  color: #d7dce5;
+  font-size: 0.8rem;
+  font-weight: 950;
+  text-align: center;
+}
+
+.focused-filter label {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.focused-filter label > span {
+  color: #c7ced9;
+  font-size: 0.72rem;
+  font-weight: 950;
+}
+
+.focused-filter input,
+.focused-filter select {
+  width: 100%;
+  min-height: 36px;
+  border: 1px solid #3a404b;
+  border-radius: 5px;
+  padding: 0 0.7rem;
+  color: #f4f6f9;
+  background: #20252d;
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 900;
+}
+
+.focused-filter select {
+  cursor: pointer;
+}
+
+.focused-filter select:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
+.focused-filter input::placeholder {
+  color: #b6bdc9;
+}
+
+.focused-filter input:focus,
+.focused-filter select:focus {
+  border-color: #777f8d;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(119, 127, 141, 0.18);
+}
+
+.focused-results {
+  min-width: 0;
+  padding: 0.6rem;
+  border: 1px solid #272d36;
+  border-radius: 8px;
+  background: #15191f;
+  box-shadow: 0 22px 54px rgba(0, 0, 0, 0.22);
+}
+
+.focused-results__header {
+  min-height: 36px;
+  padding: 0 0.7rem;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  color: #d6a85a;
+  background: #1b2027;
+}
+
+.focused-results__header strong {
+  color: #d6a85a;
+  font-size: 0.82rem;
+}
+
+.focused-results__header span {
+  max-width: 52%;
+  overflow: hidden;
+  padding: 0.28rem 0.6rem;
+  border: 1px solid #303845;
+  border-radius: 999px;
+  color: #9aa6b6;
+  background: #202631;
+  font-size: 0.64rem;
+  font-weight: 950;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.focused-grid {
+  margin-top: 0.65rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.focused-product-card {
+  min-height: 376px;
+  overflow: hidden;
+  border: 1px solid #303137;
+  border-radius: 8px;
+  display: grid;
+  grid-template-rows: 170px 1fr;
+  color: #ffffff;
+  background: #25262b;
+  text-decoration: none;
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.24);
+  transition:
+    border-color 160ms ease,
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.focused-product-card:hover,
+.focused-product-card:focus-visible {
+  border-color: #4a5260;
+  outline: none;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
+}
+
+.focused-product-card figure {
+  position: relative;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.focused-product-card img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.focused-product-card figure span {
+  position: absolute;
+  top: 0.7rem;
+  left: 0.7rem;
+  max-width: calc(100% - 1.4rem);
+  overflow: hidden;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  color: #17181d;
+  background: #ffffff;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
+  font-size: 0.66rem;
+  font-weight: 950;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.focused-product-card__body {
+  min-width: 0;
+  padding: 0.95rem;
+  display: grid;
+  align-content: start;
+  gap: 0.55rem;
+}
+
+.focused-product-card__body small {
+  color: #d6a85a;
+  font-size: 0.72rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.focused-product-card h3 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 0.84rem;
+  line-height: 1.15;
+}
+
+.focused-product-card strong {
+  color: #ffffff;
+  font-size: 0.9rem;
+}
+
+.focused-product-card p {
+  margin: 0;
+  overflow: hidden;
+  color: #c2cad5;
+  font-size: 0.69rem;
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.focused-product-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.focused-product-card__tags span {
+  padding: 0.28rem 0.5rem;
+  border: 1px solid #3d3f46;
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.68rem;
+  font-weight: 850;
+}
+
+.focused-product-card__action {
+  min-height: 38px;
+  margin-top: auto;
+  border: 1px solid #2e3b4f;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+  background: #243041;
+  font-size: 0.82rem;
+  font-weight: 950;
+}
+
+.focused-product-card:hover .focused-product-card__action,
+.focused-product-card:focus-visible .focused-product-card__action {
+  border-color: #3a4960;
+  background: #2b394d;
+}
+
+.focused-empty {
+  min-height: 220px;
+  padding: 2rem;
+  border: 1px dashed #3c4450;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  grid-column: 1 / -1;
+  color: #ffffff;
+  background: #1b2027;
+  text-align: center;
+}
+
+.focused-empty h2 {
+  margin: 0;
+}
+
+.focused-empty p {
+  margin: 0.45rem 0 0;
+  color: #aeb7c4;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -438,6 +759,14 @@
 @media (max-width: 1120px) {
   .group-shortcuts__grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .focused-catalogue {
+    grid-template-columns: 190px minmax(0, 1fr);
+  }
+
+  .focused-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -470,6 +799,23 @@
 
   .catalogue-track {
     grid-auto-columns: minmax(246px, 76vw);
+  }
+
+  .focused-catalogue {
+    grid-template-columns: 1fr;
+  }
+
+  .focused-filter {
+    position: static;
+    min-height: auto;
+  }
+
+  .focused-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .focused-product-card {
+    min-height: 396px;
   }
 }
 
