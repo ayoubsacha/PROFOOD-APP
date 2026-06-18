@@ -160,7 +160,7 @@
               <input
                 type="search"
                 [placeholder]="
-                  group.id === 'maintenance'
+                  group.id === 'maintenance' || group.id === 'installation'
                     ? 'Rechercher un service par nom...'
                     : 'Rechercher un produit par nom...'
                 "
@@ -174,10 +174,10 @@
             <button
               class="slider-arrow slider-arrow--prev"
               type="button"
-              [attr.aria-label]="'Produits précédents - ' + group.label"
+              [attr.aria-label]="'Produits precedents - ' + group.label"
               (click)="scrollSlider(track, -1)"
             >
-              ‹
+              &lsaquo;
             </button>
 
             <div class="catalogue-track" #track>
@@ -225,7 +225,7 @@
               [attr.aria-label]="'Produits suivants - ' + group.label"
               (click)="scrollSlider(track, 1)"
             >
-              ›
+              &rsaquo;
             </button>
           </div>
         </article>

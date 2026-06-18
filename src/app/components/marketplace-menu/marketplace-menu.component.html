@@ -102,7 +102,7 @@
                 </div>
                 <a
                   routerLink="/products"
-                  [queryParams]="{ family: 'Maintenance' }"
+                  [queryParams]="{ family: serviceGroup.label }"
                   (click)="closeHierarchy()"
                   >See all services &gt;</a
                 >

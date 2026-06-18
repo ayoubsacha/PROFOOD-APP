@@ -7,6 +7,7 @@ module.exports = {
   nodeEnv: process.env.NODE_ENV || 'development',
   port: Number(process.env.PORT || 5055),
   clientUrl: process.env.CLIENT_URL || 'http://localhost:4200',
+  ragServiceUrl: process.env.RAG_SERVICE_URL || 'http://localhost:8000',
   mongoUri: process.env.MONGO_URI,
   mongoDnsServers: (process.env.MONGO_DNS_SERVERS || '8.8.8.8,8.8.4.4')
     .split(',')

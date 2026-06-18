@@ -1,0 +1,434 @@
+<button
+  class="chat-toggle"
+  type="button"
+  (click)="toggleChat()"
+  aria-label="Open ProFood assistant"
+>
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M21 12a8.5 8.5 0 0 1-8.5 8.5 9 9 0 0 1-3.6-.74L3 21l1.3-5.4A8.5 8.5 0 1 1 21 12Z"></path>
+  </svg>
+  <span class="toggle-pulse"></span>
+</button>
+
+<div class="chat-window" *ngIf="isOpen">
+  <aside class="sessions">
+    <header class="sidebar-header">
+      <div class="sidebar-title">
+        <h3>ProFood</h3>
+        <p>Assistant IA</p>
+      </div>
+
+      <button class="header-action" type="button" (click)="toggleChat()" aria-label="Close chat">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m13 17-5-5 5-5"></path>
+          <path d="m19 17-5-5 5-5"></path>
+        </svg>
+      </button>
+    </header>
+
+    <div class="sessions-heading">
+      <span>Conversation History</span>
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 7h16"></path>
+        <path d="M7 12h10"></path>
+        <path d="M10 17h4"></path>
+      </svg>
+    </div>
+
+    <button class="new-session" type="button" (click)="startNewSession()" [disabled]="sessionsLoading">
+      <span aria-hidden="true">+</span>
+      Nouvelle conversation
+    </button>
+
+    <p class="session-status" *ngIf="sessionsLoading">Loading sessions...</p>
+    <p class="session-status" *ngIf="statusMessage">{{ statusMessage }}</p>
+
+    <button
+      class="session-item"
+      type="button"
+      *ngFor="let session of sessions"
+      [class.active]="session.id === currentSessionId"
+      (click)="selectSession(session.id)"
+    >
+      <span class="session-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <path d="M7 8h10"></path>
+          <path d="M7 12h6"></path>
+          <path d="M21 12a8.5 8.5 0 0 1-8.5 8.5 9 9 0 0 1-3.6-.74L3 21l1.3-5.4A8.5 8.5 0 1 1 21 12Z"></path>
+        </svg>
+      </span>
+
+      <span class="session-copy">
+        <strong>{{ session.title }}</strong>
+        <em *ngIf="session.specialist">{{ getSpecialistLabel(session.specialist) }}</em>
+        <span>{{ session.message_count }} messages</span>
+      </span>
+    </button>
+
+    <button
+      class="delete-session"
+      type="button"
+      (click)="deleteCurrentSession()"
+      [disabled]="!currentSessionId || sessionsLoading"
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M3 6h18"></path>
+        <path d="M8 6V4h8v2"></path>
+        <path d="M19 6l-1 14H6L5 6"></path>
+      </svg>
+      Supprimer
+    </button>
+
+    <footer class="sidebar-user">
+      <span>{{ userInitial }}</span>
+      <strong>{{ displayName }}</strong>
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="m6 9 6 6 6-6"></path>
+      </svg>
+    </footer>
+  </aside>
+
+  <section class="chat-panel" [class.empty-chat]="showWelcomeState">
+    <div class="voice-stage" *ngIf="isVoiceActive">
+      <div
+        class="wave-visual"
+        [class.listening]="recordingMode === 'voice-chat'"
+        [class.thinking]="voiceChatLoading"
+        [class.speaking]="assistantSpeaking"
+        aria-hidden="true"
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+
+      <div class="voice-stage-copy">
+        <strong>{{ voiceStateLabel }}</strong>
+        <span>Mode vocal continu</span>
+      </div>
+
+      <button class="stop-voice" type="button" (click)="stopVoiceConversation()">
+        Stop
+      </button>
+    </div>
+
+    <div class="chat-body" #messagesContainer>
+      <div class="empty-state" *ngIf="showWelcomeState">
+        <div class="welcome-board">
+          <div class="welcome-copy">
+            <h1>ProFood AI</h1>
+            <p>Bonjour, {{ displayName }}. Que souhaitez-vous découvrir aujourd'hui ?</p>
+            <span class="active-specialist">{{ selectedSpecialistName }}</span>
+          </div>
+
+          <div class="feature-grid">
+            <button class="feature-card" type="button" (click)="choosePrompt('Quels produits alimentaires sont disponibles ?', 'food')">
+              <span class="feature-art food" aria-hidden="true">
+                <svg viewBox="0 0 64 64">
+                  <path d="M12 30h40l-4 22H16z"></path>
+                  <path d="M18 30c1-8 7-13 14-13s13 5 14 13"></path>
+                  <path d="M24 19c-3-4-2-8 2-11 4 3 5 7 2 11"></path>
+                  <path d="M36 19c2-5 6-7 11-6 1 5-2 9-7 10"></path>
+                </svg>
+              </span>
+              <strong>Trouver des produits</strong>
+              <small>Explorer les produits alimentaires et spécialités.</small>
+            </button>
+
+            <button class="feature-card" type="button" (click)="choosePrompt('Comment trouver des fournisseurs fiables ?', 'supplier')">
+              <span class="feature-art suppliers" aria-hidden="true">
+                <svg viewBox="0 0 64 64">
+                  <path d="M9 34l12-12 12 12-12 12z"></path>
+                  <path d="M31 34l12-12 12 12-12 12z"></path>
+                  <path d="M25 34h14"></path>
+                  <path d="M14 48h36"></path>
+                </svg>
+              </span>
+              <strong>Fournisseurs vérifiés</strong>
+              <small>Connecter avec des partenaires fiables.</small>
+            </button>
+
+            <button class="feature-card" type="button" (click)="choosePrompt('Quels equipements professionnels proposez-vous ?', 'equipment')">
+              <span class="feature-art equipment" aria-hidden="true">
+                <svg viewBox="0 0 64 64">
+                  <path d="M10 17h20v34H10z"></path>
+                  <path d="M34 17h20v34H34z"></path>
+                  <path d="M16 24h8"></path>
+                  <path d="M40 24h8"></path>
+                  <path d="M16 39h8"></path>
+                  <path d="M39 36c2-4 7-4 9 0"></path>
+                </svg>
+              </span>
+              <strong>Comparer l'équipement</strong>
+              <small>Identifier le matériel professionnel adapté.</small>
+            </button>
+
+            <button class="feature-card" type="button" (click)="choosePrompt('Quelles questions du forum ProFood peuvent m aider ?', 'forum')">
+              <span class="feature-art forum" aria-hidden="true">
+                <svg viewBox="0 0 64 64">
+                  <path d="M12 16h28v21H22l-10 8z"></path>
+                  <path d="M32 28h20v17l-7-5H32z"></path>
+                  <path d="M19 24h14"></path>
+                  <path d="M38 35h8"></path>
+                </svg>
+              </span>
+              <strong>Forum ProFood</strong>
+              <small>Lire les discussions et tendances du marché.</small>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <div
+        *ngFor="let message of messages"
+        class="message-wrapper"
+        [class.user-wrapper]="message.role === 'user'"
+        [class.assistant-wrapper]="message.role === 'assistant'"
+      >
+        <img
+          class="message-avatar"
+          *ngIf="message.role === 'assistant'"
+          src="assets/profood-chef-bot-avatar-v2.png"
+          alt="Assistant"
+        />
+
+        <div class="message-stack">
+          <div class="message-meta" *ngIf="message.role === 'assistant'">
+            <span aria-hidden="true"></span>
+            <strong>ProFood AI</strong>
+            <em>{{ getSpecialistLabel(message.specialist || selectedSpecialist) }}</em>
+          </div>
+
+          <img
+            class="message-image"
+            *ngIf="message.imagePreview"
+            [src]="message.imagePreview"
+            alt="Image envoyee"
+          />
+
+          <div
+            class="message"
+            [class.user]="message.role === 'user'"
+            [class.assistant]="message.role === 'assistant'"
+          >
+            {{ message.text }}
+          </div>
+
+          <div class="image-description" *ngIf="message.imageDescription">
+            <button type="button" (click)="message.showImageDescription = !message.showImageDescription">
+              Description technique de l image
+            </button>
+
+            <p *ngIf="message.showImageDescription">{{ message.imageDescription }}</p>
+          </div>
+
+          <div class="sources" *ngIf="message.sources && message.sources.length > 0">
+            <p>Sources utilisees</p>
+
+            <ul>
+              <li *ngFor="let source of message.sources.slice(0, 3)">
+                {{ source.source || 'Document' }}
+                <span *ngIf="source.page !== undefined && source.page !== null">
+                  - page {{ source.page }}
+                </span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="typing" *ngIf="loading && !voiceChatLoading" aria-live="polite">
+        <span class="thinking-mark" aria-hidden="true"></span>
+        <span>Thinking</span>
+        <span class="thinking-dots" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+        </span>
+      </div>
+    </div>
+
+    <div class="suggestion-grid prompt-actions" *ngIf="showWelcomeState">
+      <button class="suggestion-card" type="button" (click)="choosePrompt('Quels produits alimentaires sont disponibles ?', 'food')">
+        <span class="suggestion-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="m21 8-9-5-9 5 9 5 9-5Z"></path>
+            <path d="M3 8v8l9 5 9-5V8"></path>
+          </svg>
+        </span>
+        <span>
+          <strong>Produits alimentaires</strong>
+          <small>Categories et disponibilites</small>
+        </span>
+      </button>
+
+      <button class="suggestion-card" type="button" (click)="choosePrompt('Quels equipements professionnels proposez-vous ?', 'equipment')">
+        <span class="suggestion-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M5 4h14v6H5z"></path>
+            <path d="M8 10v10"></path>
+            <path d="M16 10v10"></path>
+          </svg>
+        </span>
+        <span>
+          <strong>Equipements pros</strong>
+          <small>Materiel et solutions</small>
+        </span>
+      </button>
+
+      <button class="suggestion-card" type="button" (click)="choosePrompt('Comment trouver des fournisseurs fiables ?', 'supplier')">
+        <span class="suggestion-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M8 12 5 9l3-3"></path>
+            <path d="m16 12 3-3-3-3"></path>
+            <path d="M7 9h10"></path>
+          </svg>
+        </span>
+        <span>
+          <strong>Fournisseurs</strong>
+          <small>Partenaires fiables</small>
+        </span>
+      </button>
+
+      <button class="suggestion-card" type="button" (click)="choosePrompt('Quelles questions du forum ProFood peuvent m aider ?', 'forum')">
+        <span class="suggestion-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M21 12a8.5 8.5 0 0 1-8.5 8.5 9 9 0 0 1-3.6-.74L3 21l1.3-5.4A8.5 8.5 0 1 1 21 12Z"></path>
+            <path d="M8 10h8"></path>
+            <path d="M8 14h5"></path>
+          </svg>
+        </span>
+        <span>
+          <strong>Forum ProFood</strong>
+          <small>Conseils et FAQ</small>
+        </span>
+      </button>
+    </div>
+
+    <div class="selected-image-preview" *ngIf="selectedImagePreview">
+      <img [src]="selectedImagePreview" alt="Image selectionnee" />
+
+      <span>
+        <strong>Image prete</strong>
+        <small>{{ selectedImageFile?.name }}</small>
+      </span>
+
+      <button type="button" (click)="clearSelectedImage()" aria-label="Retirer l image">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M18 6 6 18"></path>
+          <path d="m6 6 12 12"></path>
+        </svg>
+      </button>
+    </div>
+
+    <form class="chat-input" (ngSubmit)="submitChat()">
+      <input
+        #imageInput
+        class="image-file-input"
+        type="file"
+        accept="image/png,image/jpeg,image/webp"
+        (change)="onImageSelected($event)"
+      />
+
+      <button
+        class="icon-control image-control"
+        type="button"
+        (click)="imageInput.click()"
+        [class.has-image]="selectedImageFile"
+        [disabled]="isBusy || recordingMode !== null || voiceConversationActive"
+        title="Image"
+        aria-label="Ajouter une image"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+          <path d="m8 13 2.5-2.5L15 15"></path>
+          <path d="m14 13 2-2 3 3"></path>
+          <circle cx="8" cy="9" r="1"></circle>
+        </svg>
+      </button>
+
+      <input
+        type="text"
+        name="question"
+        [(ngModel)]="question"
+        placeholder="Message ProFood..."
+        autocomplete="off"
+        [disabled]="voiceConversationActive || recordingMode === 'voice-chat'"
+      />
+
+      <button
+        class="icon-control dictate-control"
+        type="button"
+        (click)="toggleDictation()"
+        [class.recording]="recordingMode === 'dictate'"
+        [disabled]="(isBusy && recordingMode !== 'dictate') || voiceConversationActive || assistantSpeaking || (recordingMode !== null && recordingMode !== 'dictate')"
+        title="Dictate: convert speech to text only"
+        aria-label="Dictate voice to text"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3Z"></path>
+          <path d="M19 11a7 7 0 0 1-14 0"></path>
+          <path d="M12 18v4"></path>
+          <path d="M8 22h8"></path>
+        </svg>
+      </button>
+
+      <button
+        class="icon-control voice-control"
+        type="button"
+        (click)="toggleVoiceChat()"
+        [class.active]="voiceConversationActive || recordingMode === 'voice-chat' || voiceChatLoading || assistantSpeaking"
+        [disabled]="dictationLoading || recordingMode === 'dictate' || (isBusy && !isVoiceActive)"
+        [attr.aria-label]="voiceConversationActive || recordingMode === 'voice-chat' || voiceChatLoading || assistantSpeaking ? 'Stop voice chat' : 'Start voice chat'"
+        title="Voice chat"
+      >
+        <span class="mini-waves" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+        </span>
+
+        <span class="stop-square" *ngIf="voiceConversationActive || recordingMode === 'voice-chat' || voiceChatLoading || assistantSpeaking"></span>
+      </button>
+
+      <div class="model-picker" [class.open]="isSpecialistMenuOpen">
+        <button
+          class="model-trigger"
+          type="button"
+          (click)="toggleSpecialistMenu()"
+          [disabled]="isBusy"
+          aria-label="Choisir un spécialiste ProFood"
+          [attr.aria-expanded]="isSpecialistMenuOpen"
+        >
+          <span>{{ selectedSpecialistName }}</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m6 9 6 6 6-6"></path>
+          </svg>
+        </button>
+
+        <div class="model-menu" *ngIf="isSpecialistMenuOpen">
+          <button
+            class="model-option"
+            type="button"
+            *ngFor="let specialist of specialists"
+            [class.active]="specialist.id === selectedSpecialist"
+            (click)="selectSpecialist(specialist.id)"
+          >
+            {{ getSpecialistLabel(specialist.id) }}
+          </button>
+        </div>
+      </div>
+
+      <button class="send-button" type="submit" [disabled]="isBusy || recordingMode !== null || voiceConversationActive || (!selectedImageFile && !question.trim())" aria-label="Send message">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M22 2 11 13"></path>
+          <path d="m22 2-7 20-4-9-9-4 20-7Z"></path>
+        </svg>
+      </button>
+    </form>
+
+  </section>
+</div>

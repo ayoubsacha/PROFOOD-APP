@@ -1,0 +1,7 @@
+
+> place-to-invest-home@0.0.0 start
+> ng serve --proxy-config proxy.conf.json --host 127.0.0.1 --port 4200
+
+[33m>[39m Building...
+
+C:\Users\msi\Documents\maquette PFE>
