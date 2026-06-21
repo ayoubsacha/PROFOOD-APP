@@ -8,16 +8,22 @@ const messagingRoutes = require('../services/messaging-service/routes/messaging.
 const notificationRoutes = require('../services/notification-service/routes/notification.routes');
 const analyticsRoutes = require('../services/analytics-service/routes/analytics.routes');
 const assistantRoutes = require('../services/assistant-service/routes/assistant.routes');
+const { getDatabaseStatus, requireDatabaseConnection } = require('../config/database');
 
 function registerGatewayRoutes(app) {
   app.get('/api/health', (req, res) => {
+    const database = getDatabaseStatus();
+
     res.json({
-      success: true,
+      success: database.connected,
       service: 'profood-api-gateway',
-      status: 'ok',
+      status: database.connected ? 'ok' : 'degraded',
+      database,
       timestamp: new Date().toISOString(),
     });
   });
+
+  app.use(requireDatabaseConnection);
 
   app.use('/api/auth', authRoutes);
   app.use('/api/users', userRoutes);

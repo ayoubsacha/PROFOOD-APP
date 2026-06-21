@@ -129,6 +129,10 @@ export class AssistantService {
     return this.http.post<AssistantTtsSpeakResponse>(`${ASSISTANT_API_URL}/tts/speak`, { text });
   }
 
+  getAudioBlob(audioUrl: string): Observable<Blob> {
+    return this.http.get(audioUrl, { responseType: 'blob' });
+  }
+
   createSession(title?: string, specialist = 'general'): Observable<AssistantChatSession> {
     return this.http.post<AssistantChatSession>(`${ASSISTANT_API_URL}/sessions`, {
       title: title || null,
@@ -149,15 +153,51 @@ export class AssistantService {
   }
 
   getGatewayAudioUrl(audioUrl?: string | null): string | null {
-    if (!audioUrl) {
+    const normalizedAudioUrl = audioUrl?.trim();
+
+    if (!normalizedAudioUrl) {
       return null;
     }
 
-    if (audioUrl.startsWith('/static/')) {
-      return `${ASSISTANT_API_URL}${audioUrl}`;
+    if (/^https?:\/\//i.test(normalizedAudioUrl)) {
+      try {
+        const parsedUrl = new URL(normalizedAudioUrl);
+
+        if (parsedUrl.pathname.startsWith('/static/')) {
+          return `${ASSISTANT_API_URL}${parsedUrl.pathname}`;
+        }
+      } catch {
+        return normalizedAudioUrl;
+      }
+
+      return normalizedAudioUrl;
     }
 
-    return audioUrl;
+    if (normalizedAudioUrl.startsWith('/static/')) {
+      return `${ASSISTANT_API_URL}${normalizedAudioUrl}`;
+    }
+
+    if (normalizedAudioUrl.startsWith('static/')) {
+      return `${ASSISTANT_API_URL}/${normalizedAudioUrl}`;
+    }
+
+    if (normalizedAudioUrl.startsWith('/assistant/')) {
+      return `${API_BASE_URL}${normalizedAudioUrl}`;
+    }
+
+    if (normalizedAudioUrl.startsWith('assistant/')) {
+      return `${API_BASE_URL}/${normalizedAudioUrl}`;
+    }
+
+    if (normalizedAudioUrl.startsWith('/api/assistant/')) {
+      return new URL(normalizedAudioUrl, API_BASE_URL).toString();
+    }
+
+    if (normalizedAudioUrl.startsWith('api/assistant/')) {
+      return new URL(`/${normalizedAudioUrl}`, API_BASE_URL).toString();
+    }
+
+    return normalizedAudioUrl;
   }
 
   getAbsoluteAudioUrl(audioUrl?: string | null): string | null {

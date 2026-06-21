@@ -28,6 +28,8 @@ function signToken(user) {
   return jwt.sign(
     {
       sub: user._id.toString(),
+      email: user.email,
+      name: user.name,
       role: user.role,
       status: user.status,
     },

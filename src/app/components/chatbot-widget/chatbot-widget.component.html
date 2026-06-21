@@ -1,3 +1,4 @@
+<ng-container *ngIf="isAuthenticated">
 <button
   class="chat-toggle"
   type="button"
@@ -80,7 +81,10 @@
     </button>
 
     <footer class="sidebar-user">
-      <span>{{ userInitial }}</span>
+      <span class="sidebar-user-avatar" [class.has-image]="userProfileImage">
+        <img *ngIf="userProfileImage" [src]="userProfileImage" [alt]="displayName" />
+        <ng-container *ngIf="!userProfileImage">{{ userInitial }}</ng-container>
+      </span>
       <strong>{{ displayName }}</strong>
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="m6 9 6 6 6-6"></path>
@@ -432,3 +436,4 @@
 
   </section>
 </div>
+</ng-container>

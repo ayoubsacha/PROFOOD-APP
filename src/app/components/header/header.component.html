@@ -23,6 +23,17 @@
           <img src="/assets/panier-icon.svg" alt="" />
         </a>
 
+        <button
+          type="button"
+          class="theme-button"
+          [class.theme-button--light]="!darkMode()"
+          [attr.aria-label]="themeToggleLabel()"
+          [attr.title]="themeToggleLabel()"
+          (click)="toggleTheme()"
+        >
+          <span class="theme-button__icon" aria-hidden="true"></span>
+        </button>
+
         <a
           class="profile-button top-button"
           routerLink="/client/dashboard"
@@ -36,15 +47,6 @@
           }
           <span>Profile</span>
         </a>
-
-        <button
-          type="button"
-          class="theme-button"
-          [attr.aria-label]="darkMode() ? 'Activer le mode clair' : 'Activer le mode sombre'"
-          (click)="toggleTheme()"
-        >
-          {{ darkMode() ? 'Light' : 'Theme' }}
-        </button>
 
         <button type="button" class="logout-link top-button" (click)="logout()">Se deconnecter</button>
       </nav>

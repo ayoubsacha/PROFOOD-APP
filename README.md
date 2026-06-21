@@ -28,6 +28,8 @@ CLIENT_URL=http://localhost:4200
 RAG_SERVICE_URL=http://localhost:8000
 JWT_SECRET=your_secret
 MONGO_URI=your_mongodb_uri
+MONGO_SERVER_SELECTION_TIMEOUT_MS=5000
+REQUIRE_MONGO=false
 ```
 
 RAG service `.env` in `RAG/profood-rag-ollama`:
@@ -80,6 +82,10 @@ npm run backend:dev
 ```
 
 The backend gateway should be available at `http://localhost:5055`.
+
+In development, `REQUIRE_MONGO=false` lets the gateway start even when MongoDB Atlas is
+temporarily unreachable. Database-backed API routes return `503` until MongoDB is reachable.
+Use `REQUIRE_MONGO=true` for production or when you want startup to fail unless MongoDB connects.
 
 ### Terminal 4: Angular frontend
 

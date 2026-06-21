@@ -3,11 +3,14 @@ const connectDatabase = require('./config/database');
 const env = require('./config/env');
 
 async function startServer() {
-  await connectDatabase();
+  const databaseConnected = await connectDatabase({ required: env.requireMongo });
 
   const app = createApp();
   app.listen(env.port, () => {
     console.log(`API Gateway listening on http://localhost:${env.port}`);
+    if (!databaseConnected) {
+      console.warn('Backend is running without database access. API data routes will return 503.');
+    }
   });
 }
 
